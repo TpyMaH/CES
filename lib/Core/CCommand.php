@@ -39,26 +39,27 @@ class MA_CCommand{
         return $this->_currentCommandClass;
     }
 
+    public $types = array(
+        'tar' => 'MA_Model_Exec_tar',
+        'cp' => 'MA_Model_Exec_cp',
+        'mv' => 'MA_Model_Exec_mv',
+        'rm' => 'MA_Model_Exec_rm',
+        'killall' => 'MA_Model_Exec_killall',
+        'mysqldump' => 'MA_Model_Exec_mysqldump',
+        'exec' => 'MA_Model_Exec_exec',
+        'bz2' => 'MA_Model_Exec_bz2',
+        'df' => 'MA_Model_Exec_df',
+        'raid' => 'MA_Model_Exec_raid',
+        'ps' => 'MA_Model_Exec_ps',
+        'httpstat' => 'MA_Model_Exec_httpstat',
+        'du' => 'MA_Model_Exec_du',
+        'ping' => 'MA_Model_Exec_ping',
+        'timekill' => 'Ma_Model_Exec_timekill'
+    );
 
     protected function setCommandObj(){
         $currentTaskInfo = MA::Task()->CurrentTaskInfo();
-        $types = array(
-            'tar' => 'MA_Model_Exec_tar',
-            'cp' => 'MA_Model_Exec_cp',
-            'mv' => 'MA_Model_Exec_mv',
-            'rm' => 'MA_Model_Exec_rm',
-            'killall' => 'MA_Model_Exec_killall',
-            'mysqldump' => 'MA_Model_Exec_mysqldump',
-            'exec' => 'MA_Model_Exec_exec',
-            'bz2' => 'MA_Model_Exec_bz2',
-            'df' => 'MA_Model_Exec_df',
-            'raid' => 'MA_Model_Exec_raid',
-            'ps' => 'MA_Model_Exec_ps',
-            'httpstat' => 'MA_Model_Exec_httpstat',
-            'du' => 'MA_Model_Exec_du',
-            'ping' => 'MA_Model_Exec_ping',
-            'timekill' => 'Ma_Model_Exec_timekill'
-        );
+        $types = $this->types;
         $command = $this->_currentCommand;
         if (is_array($command) && !empty($command)){
             $commandClass = array_shift($command);

@@ -309,11 +309,27 @@ $sysExec['mysqldump']['path'] = '/opt/mysql/bin/mysqldump';
 //
 //
 // exec - выполнить произвольную команду.
-//  $tmpTask['command'][] = array('exec', <COMMAND>, <RETURN>, <COMMENT>, <HIDE>);
+//  $tmpTask['command'][] = array('exec', <COMMAND>, <RETURN>, <COMMENT>, <HIDE>, <COMMAND>);
 //      <COMMAND> - произвольная команда.
 //      <RETURN> - реагировать ли на ошибки. (TRUE|FALSE)
 //      <COMMENT> - (необязательный параметр) комментарий будет помещён в поле return.
 //      <HIDE> - true|false скрыть из отчета.
+//      <COMMAND> - массив с командами для выполнения. Пример:
+/*
+'command' => array(
+    array(
+        'exec',
+        'lsa -la',//COMMAND
+        true,//RETURN
+        'test',//COMMENT
+        false,//HIDE
+        'command' => array(//COMMAND
+            'success' => 'консольная команда.',
+            'error'   =>'консольная команда.'
+        )
+    ),
+)
+*/
 //
 //
 // bz2 - работы с bz2 архивами, только создание!
@@ -474,5 +490,5 @@ $sysTaskStac = array(
         ), // END task 2
     ), // END Custom stac
 );
-*/ 
+*/
 ?>

@@ -25,7 +25,7 @@ class MA_CLog{
         $pack .= $data['command'] . "\r\n";
         $pack .= "Process take: " . sprintf("%.2F",($data['end'] - $data['start'])) . "s\r\n";
         $pack .= str_repeat("-", 50) . "\r\n";
-        
+
         $handle	= fopen($this->_flog, 'a+');
 	fwrite($handle, $pack);
 	fclose($handle);
