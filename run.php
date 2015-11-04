@@ -6,15 +6,13 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 
 define('MA_BACKUP_ROOT', dirname(__FILE__));
-if ((include MA_BACKUP_ROOT . "/config.php")){
-    if ((include( MA_BACKUP_ROOT . "/lib/ma.php"))){
+if ((include MA_BACKUP_ROOT . "/config.php")) {
+    if (include(MA_BACKUP_ROOT . "/lib/MA.php")) {
         MA::Run();
-    }
-    else {
+    } else {
         die('Can\'t find function library.');
     }
-}
-else {
+} else {
     die('Can\'t find config file.');
 }
 ?>

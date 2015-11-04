@@ -1,5 +1,10 @@
 <?php
-class MA_CModel{
-    
+
+/**
+ * Class MA_CModel
+ */
+class MA_CModel
+{
+
 }
-?>
+

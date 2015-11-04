@@ -1,44 +1,10 @@
 <?php
-class MA_CCommand{
-    protected $_commandList;
-    protected $_currentCommand;
-    protected $_currentCommandClass;
-    protected $_currentCommandObj;
-    protected $_finishedCommands;
-            
-    public function __construct($commandList) {
-        if (!isset($commandList['command'])){
-            $commandList['command'] = array();
-        }
-        $this->_commandList = $commandList['command'];
-    }
-    
-    public function Next(){
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
-        if (is_object($this->_currentCommandObj)){
-            MA::Log()->Log("End '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
-        }
-        if (is_array($this->_commandList) && !empty($this->_commandList)){
-            $command = array_shift($this->_commandList);
-            if (is_array($command) && !empty($command)){
-                $this->_currentCommand = $command;
-                MA::Log()->log("Start '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
-                $this->_currentCommandObj = $this->setCommandObj();
-                return $this->_currentCommandObj;
-            }
-            else {
-                MA::Log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
-            }
-        }
-        else {
-            return false;
-        }
-    }
-    
-    public function CommandClass(){
-        return $this->_currentCommandClass;
-    }
 
+/**
+ * Class MA_CCommand
+ */
+class MA_CCommand
+{
     public $types = array(
         'tar' => 'MA_Model_Exec_tar',
         'cp' => 'MA_Model_Exec_cp',
@@ -57,28 +23,80 @@ class MA_CCommand{
         'timekill' => 'Ma_Model_Exec_timekill'
     );
 
-    protected function setCommandObj(){
+    protected $_commandList;
+    protected $_currentCommand;
+    protected $_currentCommandClass;
+    protected $_currentCommandObj;
+    protected $_finishedCommands;
+
+    /**
+     * @param $commandList
+     */
+    public function __construct($commandList)
+    {
+        if (!isset($commandList['command'])) {
+            $commandList['command'] = array();
+        }
+        $this->_commandList = $commandList['command'];
+    }
+
+    /**
+     * @return bool
+     */
+    public function Next()
+    {
+        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        if (is_object($this->_currentCommandObj)) {
+            MA::Log()->Log("End '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
+        }
+        if (is_array($this->_commandList) && !empty($this->_commandList)) {
+            $command = array_shift($this->_commandList);
+            if (is_array($command) && !empty($command)) {
+                $this->_currentCommand = $command;
+                MA::Log()->log("Start '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
+                $this->_currentCommandObj = $this->setCommandObj();
+                return $this->_currentCommandObj;
+            } else {
+                MA::Log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function CommandClass()
+    {
+        return $this->_currentCommandClass;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function setCommandObj()
+    {
         $currentTaskInfo = MA::Task()->CurrentTaskInfo();
         $types = $this->types;
         $command = $this->_currentCommand;
-        if (is_array($command) && !empty($command)){
+        if (is_array($command) && !empty($command)) {
             $commandClass = array_shift($command);
             $this->_currentCommandClass = $commandClass;
-            if (isset($types[$commandClass])){
+            if (isset($types[$commandClass])) {
                 $class = $types[$commandClass];
                 return new $class($command);
-            }
-            else {
+            } else {
                 MA::notice()->TaskError();
                 MA::Log()->log("Unknow command - '" . $this->_currentCommand[0] . "' of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 return false;
             }
-        }
-        else {
+        } else {
             MA::Log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             return false;
         }
     }
-    
+
 }
+
 ?>
