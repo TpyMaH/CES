@@ -20,7 +20,7 @@ class CTask
 {
     protected $_taskList;
     protected $_currentTask;
-    protected $_currnetTaskObj;
+    protected $_currentTaskObj;
     protected $_finishedTasks;
 
     public static $config;
@@ -50,7 +50,7 @@ class CTask
      */
     public function next()
     {
-        if (is_object($this->_currnetTaskObj)) {
+        if (is_object($this->_currentTaskObj)) {
             Ces::log()->Log("End '" . $this->_currentTask['info']['name'] . "' task.");
         }
 
@@ -59,8 +59,8 @@ class CTask
 
             Ces::log()->log("Start '" . $this->_currentTask['info']['name'] . "' task.");
 
-            $this->_currnetTaskObj = new CCommand($task);
-            return $this->_currnetTaskObj;
+            $this->_currentTaskObj = new CCommand($task);
+            return $this->_currentTaskObj;
         } else {
             return false;
         }
@@ -117,7 +117,7 @@ class CTask
      */
     public function currentTaskData()
     {
-        if (is_object($this->_currnetTaskObj)) {
+        if (is_object($this->_currentTaskObj)) {
             return $this->_currentTask;
         } else {
             return false;
@@ -129,7 +129,7 @@ class CTask
      */
     public function currentTaskInfo()
     {
-        if (is_object($this->_currnetTaskObj)) {
+        if (is_object($this->_currentTaskObj)) {
             return $this->_currentTask['info'];
         } else {
             return false;

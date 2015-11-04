@@ -61,7 +61,6 @@ class CLog
         $handle = fopen($this->_flog, 'a+');
         fwrite($handle, $pack);
         fclose($handle);
-        //file_put_contents($this->_flog, $pack, FILE_APPEND);
     }
 
     /**

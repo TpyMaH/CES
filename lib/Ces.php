@@ -13,34 +13,8 @@
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-define("LIB_ROOT", dirname(__FILE__));
-
-include LIB_ROOT . "/Core/CModel.php";
-include LIB_ROOT . "/Core/CTask.php";
-include LIB_ROOT . "/Core/CCommand.php";
-include LIB_ROOT . "/Core/CLog.php";
-include LIB_ROOT . "/Model/Mail.php";
-include LIB_ROOT . "/Model/Notice.php";
-include LIB_ROOT . "/Model/Sms.php";
-include LIB_ROOT . "/Model/Exec.php";
-include LIB_ROOT . "/Model/Exec/tar.php";
-include LIB_ROOT . "/Model/Exec/cp.php";
-include LIB_ROOT . "/Model/Exec/mv.php";
-include LIB_ROOT . "/Model/Exec/rm.php";
-include LIB_ROOT . "/Model/Exec/killall.php";
-include LIB_ROOT . "/Model/Exec/mysqldump.php";
-include LIB_ROOT . "/Model/Exec/exec.php";
-include LIB_ROOT . "/Model/Exec/bz2.php";
-include LIB_ROOT . "/Model/Exec/df.php";
-include LIB_ROOT . "/Model/Exec/raid.php";
-include LIB_ROOT . "/Model/Exec/ps.php";
-include LIB_ROOT . "/Model/Exec/httpstat.php";
-include LIB_ROOT . "/Model/Exec/du.php";
-include LIB_ROOT . "/Model/Exec/ping.php";
-include LIB_ROOT . "/Model/Exec/timekill.php";
-
 /**
- * Class MA
+ * Class Ces
  */
 class Ces
 {
@@ -51,6 +25,7 @@ class Ces
     /** @var  CLog */
     static protected $_log;
 
+    static public $basePath;
     static public $version = "0.5.0.0";
 
     /**
@@ -117,7 +92,7 @@ class Ces
         $notice->finish();
     }
 
-    private $classMap = array(
+    private static $classMap = array(
         'CModel'   => '/Core/CModel.php',
         'CTask'    => '/Core/CTask.php',
         'CCommand' => '/Core/CCommand.php',
@@ -126,20 +101,36 @@ class Ces
 
     /**
      * @param $className
+     *
+     * @todo need refactoring
      */
     public static function autoload($className)
     {
-//        if (!self::$basePath) {
-//            self::$basePath = realpath(__DIR__ . '/../../');
-//        }
-//        $path = explode('\\', $className);
-//        $class = array_pop($path);
-//
-//        $filePath = self::$basePath . '/' . implode('/', $path) . '/' . $class . '.php';
-//
-//        if (file_exists($filePath)) {
-//            require_once($filePath);
-//        }
+        if (!self::$basePath) {
+            self::$basePath = realpath(__DIR__ . "/../");
+        }
+
+        if (array_key_exists($className, self::$classMap)){
+            $filePath = self::$basePath . '/lib' .self::$classMap[$className];
+            require_once($filePath);
+            return;
+        }
+
+        $path = explode('_', $className);
+        if (strpos($className, '\\') !== false) {
+            $path = explode('\\', $className);
+        }
+
+        $class = array_pop($path);
+
+
+        $filePath = self::$basePath . '/lib/' . implode('/', $path) . '/' . $class . '.php';
+
+        if (file_exists($filePath)) {
+            require_once($filePath);
+        }
     }
 }
+
+spl_autoload_register(['Ces', 'autoload']);
 
