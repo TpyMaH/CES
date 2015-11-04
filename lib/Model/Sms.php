@@ -1,9 +1,22 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_Model_Sms
+ * Class Model_Sms
  */
-class MA_Model_Sms extends MA_CModel
+class Model_Sms extends CModel
 {
 
     protected $_config;
@@ -17,7 +30,7 @@ class MA_Model_Sms extends MA_CModel
     public function __construct()
     {
         global $sysSms;
-        $this->_counterPath = MA_BACKUP_ROOT . "/tmp/sms/" . date("Ymd");
+        $this->_counterPath = BACKUP_ROOT . "/tmp/sms/" . date("Ymd");
         if (!is_dir(dirname($this->_counterPath))) {
             mkdir(dirname($this->_counterPath), 0777, true);
         }
@@ -73,12 +86,12 @@ class MA_Model_Sms extends MA_CModel
         if ($this->_config['serverHost'] && $this->pingDomain($this->_config['serverHost']) > -1) {
             foreach ($this->_config['number'] as $number) {
                 if (strlen($number) != 11) {
-                    MA::Log()->log("Can't send SMS. Incorrect phone number - " . $number, LOG_WARNING);
+                    Ces::log()->log("Can't send SMS. Incorrect phone number - " . $number, LOG_WARNING);
                     return false;
                 }
             }
         } else {
-            MA::Log()->log("Can't send SMS. SMS server not responding.", LOG_WARNING);
+            Ces::log()->log("Can't send SMS. SMS server not responding.", LOG_WARNING);
             return false;
         }
         return true;
@@ -89,15 +102,15 @@ class MA_Model_Sms extends MA_CModel
      */
     public function Send($message)
     {
-        if ($this->_counter >= MA_CTask::$config['noticeconf']['smsperday']) {
-            MA::Log()->log("Can't send SMS. daylimit", LOG_WARNING);
+        if ($this->_counter >= CTask::$config['noticeconf']['smsperday']) {
+            Ces::log()->log("Can't send SMS. daylimit", LOG_WARNING);
             return false;
         }
         if (!$this->_config['enabled']) {
             return false;
         }
 
-        if (isset(MA_CTask::$config['notice']) && MA_CTask::$config['notice'] == 3) {
+        if (isset(CTask::$config['notice']) && CTask::$config['notice'] == 3) {
             return false;
         }
 
@@ -110,11 +123,11 @@ class MA_Model_Sms extends MA_CModel
                     . "&encoding=" . $this->_config['encoding'];
 
                 if ($r = file_get_contents($url)) {
-                    MA::Log()->log("Send SMS notice.");
+                    Ces::log()->log("Send SMS notice.");
                     file_put_contents($this->_counterPath, ++$this->_counter);
                     $return = TRUE;
                 } else {
-                    MA::Log()->log("Can't send SMS. unknow SMS server error.", LOG_WARNING);
+                    Ces::log()->log("Can't send SMS. unknow SMS server error.", LOG_WARNING);
                     $return = FALSE;
                 }
             }

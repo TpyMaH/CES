@@ -1,9 +1,22 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_CTask
+ * Class CTask
  */
-class MA_CTask
+class CTask
 {
     protected $_taskList;
     protected $_currentTask;
@@ -27,26 +40,26 @@ class MA_CTask
             }
             $this->_taskList = $sysTaskStac[$stacKey];
         } else {
-            MA::Log()->log("Can't find '" . $stacKey . "' task stac.", LOG_WARNING);
+            Ces::log()->log("Can't find '" . $stacKey . "' task stac.", LOG_WARNING);
             exit();
         }
     }
 
     /**
-     * @return bool|MA_CCommand
+     * @return bool|CCommand
      */
-    public function Next()
+    public function next()
     {
         if (is_object($this->_currnetTaskObj)) {
-            MA::Log()->Log("End '" . $this->_currentTask['info']['name'] . "' task.");
+            Ces::log()->Log("End '" . $this->_currentTask['info']['name'] . "' task.");
         }
 
-        if ($task = $this->GetNext()) {
+        if ($task = $this->_getNext()) {
             $this->_currentTask = $task;
 
-            MA::Log()->log("Start '" . $this->_currentTask['info']['name'] . "' task.");
+            Ces::log()->log("Start '" . $this->_currentTask['info']['name'] . "' task.");
 
-            $this->_currnetTaskObj = new MA_CCommand($task);
+            $this->_currnetTaskObj = new CCommand($task);
             return $this->_currnetTaskObj;
         } else {
             return false;
@@ -56,25 +69,24 @@ class MA_CTask
     /**
      * @return bool|mixed
      */
-    protected function GetNext()
+    protected function _getNext()
     {
         if (is_array($this->_taskList) && !empty($this->_taskList)) {
             $task = array_shift($this->_taskList);
-            if ($this->SchedulerCheck($task)) {
+            if ($this->_schedulerCheck($task)) {
                 return $task;
             } else {
-                return $this->GetNext();
+                return $this->_getNext();
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * @param $task
      * @return bool
      */
-    protected function SchedulerCheck($task)
+    protected function _schedulerCheck($task)
     {
         if (isset($task['config']['scheduler']) && !empty($task['config']['scheduler'])) {
             $scheduler = $task['config']['scheduler'];
@@ -103,7 +115,7 @@ class MA_CTask
     /**
      * @return bool
      */
-    public function CurrentTaskData()
+    public function currentTaskData()
     {
         if (is_object($this->_currnetTaskObj)) {
             return $this->_currentTask;
@@ -115,7 +127,7 @@ class MA_CTask
     /**
      * @return bool
      */
-    public function CurrentTaskInfo()
+    public function currentTaskInfo()
     {
         if (is_object($this->_currnetTaskObj)) {
             return $this->_currentTask['info'];

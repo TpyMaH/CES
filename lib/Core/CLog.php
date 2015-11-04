@@ -1,9 +1,22 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_CLog
+ * Class CLog
  */
-class MA_CLog
+class CLog
 {
     protected $_sid;
     protected $_flog;
@@ -14,11 +27,11 @@ class MA_CLog
     public function __construct()
     {
         $this->_sid = time();
-        $this->_flog = MA_BACKUP_ROOT . "/tmp/report/report-" . $this->_sid . ".txt";
+        $this->_flog = BACKUP_ROOT . "/tmp/report/report-" . $this->_sid . ".txt";
         if (!is_dir(dirname($this->_flog))) {
             mkdir(dirname($this->_flog), 0777, true);
         }
-        openlog("MA_Exec_System", LOG_PID | LOG_PERROR, LOG_CRON);
+        openlog("Exec_System", LOG_PID | LOG_PERROR, LOG_CRON);
     }
 
     /**
@@ -28,7 +41,7 @@ class MA_CLog
      */
     public function log($message, $pririty = LOG_DEBUG)
     {
-        if (!MA_DEBUG && $pririty == LOG_DEBUG) {
+        if (!DEBUG && $pririty == LOG_DEBUG) {
             return true;
         }
         syslog($pririty, $message);
@@ -65,7 +78,7 @@ class MA_CLog
     public function __destruct()
     {
         closelog();
-        $exec = new MA_Model_Exec('', 'notice');
+        $exec = new Model_Exec('', 'notice');
         if (is_file($this->_flog)) {
             $exec->DoExec("rm " . $this->_flog, TRUE, $r, false);
         }

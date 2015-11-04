@@ -1,5 +1,5 @@
 <?php
-class MA_Model_Exec_httpstat extends MA_Model_Exec{
+class Model_Exec_httpstat extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'httpstat';
         
@@ -64,16 +64,16 @@ class MA_Model_Exec_httpstat extends MA_Model_Exec{
     }
 
 
-    public function Run(){
-        MA::Notice()->sms = false;
+    public function run(){
+        Ces::notice()->sms = false;
         
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
         
         $codes = $this->_commandParams['codes'];
         $command = $this->_execPath . " -I '" . $this->_commandParams['what'] . "' |grep HTTP |awk '{print $2}'";
         if ($this->DoExec($command, true, $return)){
             if (empty($return)){                
-                MA::Log()->log("Couldn't resolve host '" . $this->_commandParams['what'] . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("Couldn't resolve host '" . $this->_commandParams['what'] . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
 
                 if (in_array('zero', $codes['codelist']) && isset($codes['codecommand']['zero']) && !empty($codes['commandlist'][$codes['codecommand']['zero']])){
                     $this->DoExec($codes['commandlist'][$codes['codecommand']['zero']], true);
@@ -87,7 +87,7 @@ class MA_Model_Exec_httpstat extends MA_Model_Exec{
             }
             if (in_array($return, $codes['codelist'])){
 
-                MA::Log()->log("'" . $this->_commandParams['what'] . "' url have problem. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("'" . $this->_commandParams['what'] . "' url have problem. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 
                 if (isset($codes['codecommand'][$return]) && !empty($codes['commandlist'][$codes['codecommand'][$return]])){
                     $this->DoExec($codes['commandlist'][$codes['codecommand'][$return]], true);
@@ -99,14 +99,14 @@ class MA_Model_Exec_httpstat extends MA_Model_Exec{
             }
         }
         else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         $return = "code: " . (is_array($return) ? 'array' : $return);
         if (isset($this->_commandParams['comment'])){
             $return .= " (" . $this->_commandParams['comment']. ")";
         }
-        MA::Notice()->CommandReturn($return);
+        Ces::notice()->CommandReturn($return);
 
         return $funcReturn;
     }

@@ -1,9 +1,22 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_Model_Notice
+ * Class Model_Notice
  */
-class MA_Model_Notice extends MA_CModel
+class Model_Notice extends CModel
 {
     protected $_task;
     protected $_taskList = array();
@@ -16,7 +29,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * @param $task
      */
-    public function OpenTask($task)
+    public function openTask($task)
     {
         if (!empty($this->_task)) {
             $this->_task['mend'] = microtime(TRUE);
@@ -35,7 +48,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * @param $name
      */
-    public function StartCommand($name)
+    public function startCommand($name)
     {
         if (is_array($this->_task['commandList'])) {
             array_shift($this->_task['commandList']);
@@ -50,7 +63,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * Hide command
      */
-    public function CommandHide()
+    public function commandHide()
     {
         $this->_command['hide'] = true;
     }
@@ -58,7 +71,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * @param $status
      */
-    public function CommandStatus($status)
+    public function commandStatus($status)
     {
         if ($status) {
             $this->_task['completed'] += 1;
@@ -88,7 +101,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * End of Command
      */
-    public function EndCommand()
+    public function endCommand()
     {
         $this->_command['mend'] = microtime(TRUE);
         $this->_command['end'] = date("H:i:s");
@@ -99,7 +112,7 @@ class MA_Model_Notice extends MA_CModel
     /**
      * @return bool
      */
-    public function Finish()
+    public function finish()
     {
         if (empty($this->_task) && empty($this->_taskList)) {
             return false;
@@ -110,18 +123,18 @@ class MA_Model_Notice extends MA_CModel
         }
 
         if (isset($this->_command)) {
-            $this->EndCommand();
+            $this->endCommand();
         }
 
         $this->_task['mend'] = microtime(TRUE);
         $this->_task['end'] = date("H:i:s");
         $this->_taskList[] = $this->_task;
 
-        if (!isset(MA_CTask::$config['notice'])) {
-            MA_CTask::$config['notice'] = 0;
+        if (!isset(CTask::$config['notice'])) {
+            CTask::$config['notice'] = 0;
         }
 
-        if (isset(MA_CTask::$config['notice']) && MA_CTask::$config['notice'] == 4) {
+        if (isset(CTask::$config['notice']) && CTask::$config['notice'] == 4) {
             return false;
         }
 
@@ -134,23 +147,23 @@ class MA_Model_Notice extends MA_CModel
             $log = array('email' => TRUE, 'sms' => TRUE);
         }
 
-        $mail = new MA_Model_Mail();
+        $mail = new Model_Mail();
 
         $message = $this->MessegeTemplate();
         $mail->AddMessage($message);
-        $mail->AddAttachment(MA::Log()->flogPath(), "application/txt");
+        $mail->AddAttachment(Ces::log()->flogPath(), "application/txt");
         $mail->BuildMessage();
 
-        if (isset(MA_CTask::$config['notice']) && MA_CTask::$config['notice'] != 1) {
+        if (isset(CTask::$config['notice']) && CTask::$config['notice'] != 1) {
             $mail->Send();
         }
 
-        if (isset(MA_CTask::$config['notice']) && MA_CTask::$config['notice'] != 2) {
+        if (isset(CTask::$config['notice']) && CTask::$config['notice'] != 2) {
             if ($this->_error) {
                 if ($log['email']) {
                     $mail->SendError();
                 }
-                $sms = new MA_Model_Sms();
+                $sms = new Model_Sms();
                 $smsMessage = 'CES error on - ' . $this->_reportData['header']['hostname'] . ' (' . implode(" ", $this->_reportData['header']['ip']) . ')';
                 if ($log['sms']) {
                     $sms->Send($smsMessage);
@@ -185,7 +198,7 @@ class MA_Model_Notice extends MA_CModel
         }
         $report = serialize($report);
 
-        $filename = MA_BACKUP_ROOT . "/tmp/notice/" . md5($report . date("Ymd"));
+        $filename = BACKUP_ROOT . "/tmp/notice/" . md5($report . date("Ymd"));
         if (!is_dir(dirname($filename))) {
             mkdir(dirname($filename), 0777, true);
         }
@@ -205,8 +218,8 @@ class MA_Model_Notice extends MA_CModel
 
         $data['global']['first'] = isset($data['global']['first']) ? $data['global']['first'] : time();
 
-        MA_CTask::$config['noticeconf'] = isset(MA_CTask::$config['noticeconf']) ? MA_CTask::$config['noticeconf'] : array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
-        $config = MA_CTask::$config['noticeconf'];
+        CTask::$config['noticeconf'] = isset(CTask::$config['noticeconf']) ? CTask::$config['noticeconf'] : array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
+        $config = CTask::$config['noticeconf'];
 
         if ($config['repeat']) {
             $email = true;
@@ -262,7 +275,7 @@ class MA_Model_Notice extends MA_CModel
      */
     public function PrepareMessegeHeader()
     {
-        $exec = new MA_Model_Exec('', 'notice');
+        $exec = new Model_Exec('', 'notice');
 
         $data = array();
 
@@ -383,7 +396,7 @@ class MA_Model_Notice extends MA_CModel
                 <thead>
                     <caption style='line-height:25px; color: white;"
                 . ($task['total'] == $task['completed'] ? " background: silver;" : " background: red;")
-                . "'><b>Task: \""
+                . "'><b>task: \""
                 . $task['name']
                 . "\" ("
                 . $task['completed'] . " completed commands of " . $task['total']

@@ -1,5 +1,5 @@
 <?php
-class Ma_Model_Exec_timekill extends MA_Model_Exec{
+class Model_Exec_timekill extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'timekill';
         
@@ -18,8 +18,8 @@ class Ma_Model_Exec_timekill extends MA_Model_Exec{
         parent::__construct($commandParams,'ps');
     }
     
-    public function Run(){
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+    public function run(){
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $command = $this->_execPath . " -eo pid,etime,cmd |grep " . $this->_commandParams['what'];
 
@@ -55,7 +55,7 @@ class Ma_Model_Exec_timekill extends MA_Model_Exec{
 
             $return = $status;
             if ($return == 1){
-                MA::Log()->log("'" . $this->_commandParams['what'] . "' process was terminated. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("'" . $this->_commandParams['what'] . "' process was terminated. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 $funcReturn = FALSE;
             }
             else {
@@ -63,14 +63,14 @@ class Ma_Model_Exec_timekill extends MA_Model_Exec{
             }
         }
         else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         $return = "";
         if (isset($this->_commandParams['comment'])){
             $return .= " (" . $this->_commandParams['comment']. ")";
         }
-        MA::Notice()->CommandReturn($return);
+        Ces::notice()->CommandReturn($return);
         return $funcReturn;
     }
 }

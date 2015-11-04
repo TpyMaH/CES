@@ -1,5 +1,5 @@
 <?php
-class MA_Model_Exec_raid extends MA_Model_Exec{
+class Model_Exec_raid extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'raid';
         
@@ -11,16 +11,16 @@ class MA_Model_Exec_raid extends MA_Model_Exec{
         parent::__construct($commandParams);
     }
     
-    public function Run(){
+    public function run(){
 
         $data['command'] = $this->_name;
         $data['start'] = microtime(TRUE);
 
 
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         if (!is_resource(($handle=@fopen("/proc/mdstat","rb")))) {
-            MA::Log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             return false;
         }
         $flag = false;
@@ -39,16 +39,16 @@ class MA_Model_Exec_raid extends MA_Model_Exec{
         }
         fclose($handle);
 
-        MA::Notice()->CommandReturn(($i-$j).'/'.$i);
+        Ces::notice()->CommandReturn(($i-$j).'/'.$i);
 
         $data['end'] = microtime(TRUE);
-        MA::Log()->flog($data);
+        Ces::log()->flog($data);
 
         if (!$flag){
             $funcReturn = TRUE;
         }
         else {
-            MA::Log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
 

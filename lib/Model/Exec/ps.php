@@ -1,5 +1,5 @@
 <?php
-class MA_Model_Exec_ps extends MA_Model_Exec{
+class Model_Exec_ps extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'ps';
         
@@ -21,15 +21,15 @@ class MA_Model_Exec_ps extends MA_Model_Exec{
         parent::__construct($commandParams);
     }
     
-    public function Run(){
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+    public function run(){
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $command = $this->_execPath . " -A|grep " . $this->_commandParams['what'] . "|wc -l";
         if ($this->DoExec($command, true, $return)){
             $return = $return[0];
             if ($return == 0){
                 $this->ExecSecond($command);
-                MA::Log()->log("'" . $this->_commandParams['what'] . "' process is not running. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("'" . $this->_commandParams['what'] . "' process is not running. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 $funcReturn = FALSE;
             }
             else {
@@ -37,14 +37,14 @@ class MA_Model_Exec_ps extends MA_Model_Exec{
             }
         }
         else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         $return = "";
         if (isset($this->_commandParams['comment'])){
             $return .= " (" . $this->_commandParams['comment']. ")";
         }
-        MA::Notice()->CommandReturn($return);
+        Ces::notice()->CommandReturn($return);
         return $funcReturn;
     }
     
@@ -52,7 +52,7 @@ class MA_Model_Exec_ps extends MA_Model_Exec{
         if (!isset($this->_commandParams['command'])){
             return true;
         }
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
         $repeat = 0;
         if (isset($this->_commandParams['repeat'])){
             $repeat = (int) $this->_commandParams['repeat'];
@@ -69,14 +69,14 @@ class MA_Model_Exec_ps extends MA_Model_Exec{
                         $return = false;
                     }
                     else {
-                        MA::Notice()->sms = false;
+                        Ces::notice()->sms = false;
                         $return = true;
                         break;
                     }
                 }
                 
             } else {
-                MA::Log()->log("Can't exec '" . $this->_commandParams['command'] . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("Can't exec '" . $this->_commandParams['command'] . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 $return = false;
             }
             sleep(2);

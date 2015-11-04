@@ -1,5 +1,5 @@
 <?php
-class MA_Model_Exec_ping extends MA_Model_Exec{
+class Model_Exec_ping extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'ping';
         
@@ -21,8 +21,8 @@ class MA_Model_Exec_ping extends MA_Model_Exec{
         parent::__construct($commandParams);
     }
     
-    public function Run(){
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+    public function run(){
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $command = "ping -c " . $this->_commandParams['packet'] . " " . $this->_commandParams['what'] . " | grep 'packet loss,'";
         if ($this->DoExec($command, true, $return)){
@@ -53,12 +53,12 @@ class MA_Model_Exec_ping extends MA_Model_Exec{
             if (isset($this->_commandParams['comment'])){
                 $return .= " (" . $this->_commandParams['comment']. ")";
             }
-            MA::Notice()->CommandReturn($return);
+            Ces::notice()->CommandReturn($return);
             
             $funcReturn = ((isset($funcReturn) && $funcReturn === FALSE) ? FALSE : TRUE);
         }
         else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
 

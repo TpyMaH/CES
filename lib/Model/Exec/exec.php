@@ -1,6 +1,6 @@
 <?php
 
-class MA_Model_Exec_exec extends MA_Model_Exec
+class Model_Exec_exec extends Model_Exec
 {
     private $_commands;
 
@@ -28,16 +28,16 @@ class MA_Model_Exec_exec extends MA_Model_Exec
         parent::__construct($commandParams);
     }
 
-    public function Run()
+    public function run()
     {
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $command = $this->_commandParams['command'];
 
         if ($this->DoExec($command, true)) {
             $funcReturn = TRUE;
         } else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         if (isset($this->_commandParams['return']) && $this->_commandParams['return'] == FALSE) {
@@ -50,7 +50,7 @@ class MA_Model_Exec_exec extends MA_Model_Exec
         if (isset($this->_commandParams['comment'])) {
             $return .= " (" . $this->_commandParams['comment'] . ")";
         }
-        MA::Notice()->CommandReturn($return);
+        Ces::notice()->CommandReturn($return);
         return $funcReturn;
     }
 

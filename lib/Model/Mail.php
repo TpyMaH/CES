@@ -1,15 +1,28 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_Model_Mail
+ * Class Model_Mail
  *
  * Usage Example:
- *   $mulmail = new MA_Model_Mail();
+ *   $mulmail = new Model_Mail();
  *   $cid = $mulmail->AddAttachment(file, "octet-stream");
  *   $mulmail->AddMessage("Message");
  *   $mulmail->Send();
  */
-class MA_Model_Mail extends MA_CModel
+class Model_Mail extends CModel
 {
     protected $_config;
     protected $header;
@@ -32,41 +45,41 @@ class MA_Model_Mail extends MA_CModel
             $this->_config['error_to'] = array($this->_config['error_to']);
         }
 
-        if (!isset(MA_CTask::$config['ignore_default_mails'])) {
-            MA_CTask::$config['ignore_default_mails'] = false;
+        if (!isset(CTask::$config['ignore_default_mails'])) {
+            CTask::$config['ignore_default_mails'] = false;
         }
 
-        if (MA_CTask::$config['ignore_default_mails'] == true && isset(MA_CTask::$config['additional_mails']) && isset(MA_CTask::$config['additional_error_mails'])) {
+        if (CTask::$config['ignore_default_mails'] == true && isset(CTask::$config['additional_mails']) && isset(CTask::$config['additional_error_mails'])) {
             $this->_config['to'] = array();
             $this->_config['error_to'] = array();
         }
 
-        if (isset(MA_CTask::$config['additional_mails'])) {
-            if (!is_array(MA_CTask::$config['additional_mails'])) {
-                MA_CTask::$config['additional_mails'] = array(MA_CTask::$config['additional_mails']);
+        if (isset(CTask::$config['additional_mails'])) {
+            if (!is_array(CTask::$config['additional_mails'])) {
+                CTask::$config['additional_mails'] = array(CTask::$config['additional_mails']);
             }
         }
 
-        if (isset(MA_CTask::$config['additional_error_mails'])) {
-            if (!is_array(MA_CTask::$config['additional_error_mails'])) {
-                MA_CTask::$config['additional_error_mails'] = array(MA_CTask::$config['additional_error_mails']);
+        if (isset(CTask::$config['additional_error_mails'])) {
+            if (!is_array(CTask::$config['additional_error_mails'])) {
+                CTask::$config['additional_error_mails'] = array(CTask::$config['additional_error_mails']);
             }
         }
 
-        if (isset(MA_CTask::$config['subject'])) {
-            $this->_config['subject'] = MA_CTask::$config['subject'];
+        if (isset(CTask::$config['subject'])) {
+            $this->_config['subject'] = CTask::$config['subject'];
         }
 
-        if (isset(MA_CTask::$config['error_subject'])) {
-            $this->_config['error_subject'] = MA_CTask::$config['error_subject'];
+        if (isset(CTask::$config['error_subject'])) {
+            $this->_config['error_subject'] = CTask::$config['error_subject'];
         }
 
-        if (isset(MA_CTask::$config['additional_mails'])) {
-            $this->_config['to'] = array_merge($this->_config['to'], MA_CTask::$config['additional_mails']);
+        if (isset(CTask::$config['additional_mails'])) {
+            $this->_config['to'] = array_merge($this->_config['to'], CTask::$config['additional_mails']);
         }
 
-        if (isset(MA_CTask::$config['additional_error_mails'])) {
-            $this->_config['error_to'] = array_merge($this->_config['error_to'], MA_CTask::$config['additional_error_mails']);
+        if (isset(CTask::$config['additional_error_mails'])) {
+            $this->_config['error_to'] = array_merge($this->_config['error_to'], CTask::$config['additional_error_mails']);
         }
         $this->parts = array("");
         $this->boundary = "--" . md5(uniqid(time()));
@@ -130,9 +143,9 @@ class MA_Model_Mail extends MA_CModel
     public function Send()
     {
         foreach ($this->_config['to'] as $to) {
-            MA::Log()->Log("Start sending mail to '" . $to . " from " . $this->_config['from']);
+            Ces::log()->Log("Start sending mail to '" . $to . " from " . $this->_config['from']);
             mail($to, '=?UTF-8?B?' . base64_encode($this->_config['subject']) . '?=', $this->message, $this->header);
-            MA::Log()->Log("End sending mail to '" . $to . " from " . $this->_config['from']);
+            Ces::log()->Log("End sending mail to '" . $to . " from " . $this->_config['from']);
         }
     }
 

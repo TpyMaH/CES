@@ -1,26 +1,39 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /**
- * Class MA_CCommand
+ * Class CCommand
  */
-class MA_CCommand
+class CCommand
 {
     public $types = array(
-        'tar' => 'MA_Model_Exec_tar',
-        'cp' => 'MA_Model_Exec_cp',
-        'mv' => 'MA_Model_Exec_mv',
-        'rm' => 'MA_Model_Exec_rm',
-        'killall' => 'MA_Model_Exec_killall',
-        'mysqldump' => 'MA_Model_Exec_mysqldump',
-        'exec' => 'MA_Model_Exec_exec',
-        'bz2' => 'MA_Model_Exec_bz2',
-        'df' => 'MA_Model_Exec_df',
-        'raid' => 'MA_Model_Exec_raid',
-        'ps' => 'MA_Model_Exec_ps',
-        'httpstat' => 'MA_Model_Exec_httpstat',
-        'du' => 'MA_Model_Exec_du',
-        'ping' => 'MA_Model_Exec_ping',
-        'timekill' => 'Ma_Model_Exec_timekill'
+        'tar' => 'Model_Exec_tar',
+        'cp' => 'Model_Exec_cp',
+        'mv' => 'Model_Exec_mv',
+        'rm' => 'Model_Exec_rm',
+        'killall' => 'Model_Exec_killall',
+        'mysqldump' => 'Model_Exec_mysqldump',
+        'exec' => 'Model_Exec_exec',
+        'bz2' => 'Model_Exec_bz2',
+        'df' => 'Model_Exec_df',
+        'raid' => 'Model_Exec_raid',
+        'ps' => 'Model_Exec_ps',
+        'httpstat' => 'Model_Exec_httpstat',
+        'du' => 'Model_Exec_du',
+        'ping' => 'Model_Exec_ping',
+        'timekill' => 'Model_Exec_timekill'
     );
 
     protected $_commandList;
@@ -41,23 +54,24 @@ class MA_CCommand
     }
 
     /**
-     * @return bool
+     * @return bool|Model_Exec
+     * @throws Exception
      */
-    public function Next()
+    public function next()
     {
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
         if (is_object($this->_currentCommandObj)) {
-            MA::Log()->Log("End '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
+            Ces::log()->Log("End '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
         }
         if (is_array($this->_commandList) && !empty($this->_commandList)) {
             $command = array_shift($this->_commandList);
             if (is_array($command) && !empty($command)) {
                 $this->_currentCommand = $command;
-                MA::Log()->log("Start '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
+                Ces::log()->log("Start '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
                 $this->_currentCommandObj = $this->setCommandObj();
                 return $this->_currentCommandObj;
             } else {
-                MA::Log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             }
         } else {
             return false;
@@ -67,17 +81,19 @@ class MA_CCommand
     /**
      * @return mixed
      */
-    public function CommandClass()
+    public function commandClass()
     {
         return $this->_currentCommandClass;
     }
 
+
     /**
-     * @return bool
+     * @return bool|Model_Exec
+     * @throws Exception
      */
     protected function setCommandObj()
     {
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
         $types = $this->types;
         $command = $this->_currentCommand;
         if (is_array($command) && !empty($command)) {
@@ -87,12 +103,12 @@ class MA_CCommand
                 $class = $types[$commandClass];
                 return new $class($command);
             } else {
-                MA::notice()->TaskError();
-                MA::Log()->log("Unknow command - '" . $this->_currentCommand[0] . "' of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                Ces::notice()->TaskError();
+                Ces::log()->log("Unknow command - '" . $this->_currentCommand[0] . "' of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
                 return false;
             }
         } else {
-            MA::Log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             return false;
         }
     }

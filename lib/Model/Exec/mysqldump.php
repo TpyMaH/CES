@@ -1,5 +1,5 @@
 <?php
-class MA_Model_Exec_mysqldump extends MA_Model_Exec{
+class Model_Exec_mysqldump extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'mysqldump';
         
@@ -30,22 +30,22 @@ class MA_Model_Exec_mysqldump extends MA_Model_Exec{
         return false;
     }
     
-    public function Run(){
-        $currentTaskInfo = MA::Task()->CurrentTaskInfo();
+    public function run(){
+        $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $command = $this->_execPath . " " . $this->_commandParams['options'] . " " . $this->_commandParams['database'] . " | gzip > " . $this->_commandParams['to'];
         if ($this->DoExec($command, true)){
             $funcReturn = TRUE;
         }
         else {
-            MA::Log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         $return = "";
         if (isset($this->_commandParams['comment'])){
             $return .= " (" . $this->_commandParams['comment']. ")";
         }
-        MA::Notice()->CommandReturn($return);
+        Ces::notice()->CommandReturn($return);
         return $funcReturn;
     }
 }

@@ -9,19 +9,19 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2013, TpyMaH (Vadim Buchinsky) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Надо ли выводить все действия в syslog. TRUE|FALSE
  */
-define('MA_DEBUG', false);
+define('DEBUG', false);
 
 // ==================================================
 // =                    Почта                       =
 // ==================================================
-// Ниже указанные настройки используются в MA_Model_Mail
+// Ниже указанные настройки используются в Model_Mail
 
 // Устанавливает почтовые адреса на которые отправлять простые отчеты.
 // Может быть как строкой так и массивом.
@@ -70,7 +70,7 @@ $sysMail['error_subject'] = 'CES error notice';
 // ==================================================
 // =                      SMS                       =
 // ==================================================
-// Ниже указанные настройки используются в MA_Model_Sms
+// Ниже указанные настройки используются в Model_Sms
 //
 // Чтобы данная служба работала на сервере рассылки надо открыть доступ для IP 
 // сервера на котором расположена текущая копия CES!
