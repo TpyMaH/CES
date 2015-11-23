@@ -20,6 +20,7 @@ use \ces\core\Task;
 
 /**
  * Class Model_Mail
+ * @package ces\models
  *
  * Usage Example:
  *   $mulmail = new Model_Mail();
@@ -175,4 +176,3 @@ class Mail extends Model
         $this->config['subject'] = $subject;
     }
 }
-

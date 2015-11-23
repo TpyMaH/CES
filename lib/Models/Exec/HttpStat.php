@@ -1,11 +1,31 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace ces\models\exec;
 
 use \ces\Ces;
 use \ces\models\Exec;
 
-class Model_Exec_httpstat extends Model_Exec
+/**
+ * Class Model_Exec_httpstat
+ * @package ces\models\exec
+ */
+class HttpStat extends Exec
 {
+    /**
+     * @inheritdoc
+     */
     public function __construct($data)
     {
         $this->_name = 'httpstat';
@@ -25,6 +45,10 @@ class Model_Exec_httpstat extends Model_Exec
         parent::__construct($commandParams, 'curl');
     }
 
+    /**
+     * @param $codes
+     * @return array
+     */
     protected function prepareCodes($codes)
     {
         $codecommand = array();
@@ -69,51 +93,60 @@ class Model_Exec_httpstat extends Model_Exec
         );
     }
 
-
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
         Ces::notice()->sms = false;
 
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
-        $codes = $this->_commandParams['codes'];
-        $command = $this->_execPath . " -I '" . $this->_commandParams['what'] . "' |grep HTTP |awk '{print $2}'";
-        if ($this->DoExec($command, true, $return)) {
+        $codes = $this->commandParams['codes'];
+        $command = $this->execPath . " -I '" . $this->commandParams['what'] . "' |grep HTTP |awk '{print $2}'";
+        $return = null;
+        if ($this->doExec($command, true, $return)) {
             if (empty($return)) {
-                Ces::log()->log("Couldn't resolve host '" . $this->_commandParams['what'] . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                $message = "Couldn't resolve host '" . $this->commandParams['what'] . "' in '"
+                    . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
+                Ces::log()->log($message, LOG_WARNING);
 
-                if (in_array('zero', $codes['codelist']) && isset($codes['codecommand']['zero']) && !empty($codes['commandlist'][$codes['codecommand']['zero']])) {
-                    $this->DoExec($codes['commandlist'][$codes['codecommand']['zero']], true);
+                if (in_array('zero', $codes['codelist'])
+                    && isset($codes['codecommand']['zero'])
+                    && !empty($codes['commandlist'][$codes['codecommand']['zero']])
+                ) {
+                    $this->doExec($codes['commandlist'][$codes['codecommand']['zero']], true);
                 }
-                $return = 'zero';
-                return FALSE;
+                return false;
             } else {
                 $return = $return[0];
-
             }
             if (in_array($return, $codes['codelist'])) {
+                $message = "'" . $this->commandParams['what'] . "' url have problem. '" . $command . "' in '"
+                    . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
+                Ces::log()->log($message, LOG_WARNING);
 
-                Ces::log()->log("'" . $this->_commandParams['what'] . "' url have problem. '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
-
-                if (isset($codes['codecommand'][$return]) && !empty($codes['commandlist'][$codes['codecommand'][$return]])) {
-                    $this->DoExec($codes['commandlist'][$codes['codecommand'][$return]], true);
+                if (isset($codes['codecommand'][$return])
+                    && !empty($codes['commandlist'][$codes['codecommand'][$return]])
+                ) {
+                    $this->doExec($codes['commandlist'][$codes['codecommand'][$return]], true);
                 }
-                $funcReturn = FALSE;
+                $funcReturn = false;
             } else {
-                $funcReturn = TRUE;
+                $funcReturn = true;
             }
         } else {
-            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
-            $funcReturn = FALSE;
+            $message = "Can't exec '" . $command . "' in '"
+                . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
+            $funcReturn = false;
         }
         $return = "code: " . (is_array($return) ? 'array' : $return);
-        if (isset($this->_commandParams['comment'])) {
-            $return .= " (" . $this->_commandParams['comment'] . ")";
+        if (isset($this->commandParams['comment'])) {
+            $return .= " (" . $this->commandParams['comment'] . ")";
         }
         Ces::notice()->commandReturn($return);
 
         return $funcReturn;
     }
 }
-
-?>

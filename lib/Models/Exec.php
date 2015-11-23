@@ -18,7 +18,8 @@ use \ces\Ces;
 use \ces\core\Model;
 
 /**
- * Class Model_Exec
+ * Class Exec
+ * @package ces\models
  */
 class Exec extends Model
 {
@@ -74,7 +75,8 @@ class Exec extends Model
     protected function prepareOptions()
     {
         if (isset($this->commandParams['options']) && is_array($this->commandParams['options'])) {
-            $this->prepareCommand['options'] = array_unique(array_merge($this->requiredOptions, $this->commandParams['options']));
+            $options = array_merge($this->requiredOptions, $this->commandParams['options']);
+            $this->prepareCommand['options'] = array_unique($options);
         } else {
             $this->prepareCommand['options'] = $this->requiredOptions;
         }
@@ -87,7 +89,8 @@ class Exec extends Model
     protected function implodePreparedOptions()
     {
         $this->prepareCommand['options'] = implode("", $this->prepareCommand['options']);
-        $this->prepareCommand['options'] = empty($this->prepareCommand['options']) ? '' : "-" . $this->prepareCommand['options'];
+        $hasOptions = empty($this->prepareCommand['options']);
+        $this->prepareCommand['options'] = $hasOptions ? '' : "-" . $this->prepareCommand['options'];
     }
 
     /**
@@ -149,4 +152,3 @@ class Exec extends Model
         }
     }
 }
-

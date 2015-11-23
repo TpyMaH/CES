@@ -71,11 +71,10 @@ class Sms extends Model
         $starttime = microtime(true);
         $file = fsockopen($domain, 80, $errno, $errstr, 10);
         $stoptime = microtime(true);
-        $status = 0;
 
-        if (!$file)
+        if (!$file) {
             $status = -1;  // Site is down
-        else {
+        } else {
             fclose($file);
 
             $status = ($stoptime - $starttime) * 1000;
@@ -121,6 +120,7 @@ class Sms extends Model
         }
 
         if ($this->check()) {
+            $return = false;
             foreach ($this->config['number'] as $number) {
                 $url = $this->config['sendPage']
                     . "?smsphonenumber=" . $number

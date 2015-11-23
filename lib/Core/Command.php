@@ -112,7 +112,7 @@ class Command
                 $class = $types[$commandClass];
                 return new $class($command);
             } else {
-                Ces::notice()->TaskError();
+                Ces::notice()->taskError();
                 $message = "Unknown command - '"
                     . $this->currentCommand[0]
                     . "' of '" . $currentTaskInfo['name']

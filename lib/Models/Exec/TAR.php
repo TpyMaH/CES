@@ -1,11 +1,31 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace ces\models\exec;
 
 use \ces\Ces;
 use \ces\models\Exec;
 
-class Model_Exec_tar extends Model_Exec
+/**
+ * Class TAR
+ * @package ces\models\exec
+ */
+class TAR extends Exec
 {
+    /**
+     * @inheritdoc
+     */
     public function __construct($data)
     {
         $this->_name = 'tar';
@@ -37,10 +57,13 @@ class Model_Exec_tar extends Model_Exec
         parent::__construct($commandParams);
     }
 
-    protected function ImplodePreparedOptions()
+    /**
+     * @inheritdoc
+     */
+    protected function implodePreparedOptions()
     {
         $options = "-";
-        foreach ($this->_prepareCommand['options'] as $option) {
+        foreach ($this->prepareCommand['options'] as $option) {
             switch ($option) {
                 case 'c':
                     $options .= 'c';
@@ -65,7 +88,7 @@ class Model_Exec_tar extends Model_Exec
         if (array_search("f", $this->_requiredOptions)) {
             $options = str_replace("f", "", $options) . "f";
         }
-        $this->_prepareCommand['options'] = $options;
+        $this->prepareCommand['options'] = $options;
     }
 
     public function run()
@@ -73,31 +96,31 @@ class Model_Exec_tar extends Model_Exec
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         $this->PrepareOptions();
-        $this->ImplodePreparedOptions();
+        $this->implodePreparedOptions();
 
-        $command = "cd " . $this->_commandParams['path'] . " && ";
-        if (isset($this->_commandParams['userCommand']) && $this->_commandParams['userCommand'] === true) {
-            $command .= $this->_execPath . " " . implode("", $this->_commandParams['options']);
+        $command = "cd " . $this->commandParams['path'] . " && ";
+        if (isset($this->commandParams['userCommand']) && $this->commandParams['userCommand'] === true) {
+            $command .= $this->execPath . " " . implode("", $this->commandParams['options']);
         } else {
-            $command .= $this->_execPath . " " . $this->_prepareCommand['options'] . " " . $this->_commandParams['file'] . " .";
+            $command .= $this->execPath . " " . $this->prepareCommand['options']
+                . " " . $this->commandParams['file'] . " .";
         }
 
-        if ($this->DoExec($command, false, $return, true, $code)) {
-            $funcReturn = TRUE;
+        if ($this->doExec($command, false, $return, true, $code)) {
+            $funcReturn = true;
         } else {
-            Ces::log()->log("Can't exec '" . $command . "' in 'tar' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
-            $funcReturn = FALSE;
+            $message = "Can't exec '" . $command . "' in 'tar' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
+            $funcReturn = false;
         }
         $return = "code: " . $code;
-        if (isset($this->_commandParams['comment'])) {
-            $return .= " (" . $this->_commandParams['comment'] . ")";
+        if (isset($this->commandParams['comment'])) {
+            $return .= " (" . $this->commandParams['comment'] . ")";
         }
         Ces::notice()->commandReturn($return);
-        if (isset($this->_commandParams['ignoreCommand']) && $this->_commandParams['ignoreCommand'] === true) {
+        if (isset($this->commandParams['ignoreCommand']) && $this->commandParams['ignoreCommand'] === true) {
             $funcReturn = true;
         }
         return $funcReturn;
     }
 }
-
-?>

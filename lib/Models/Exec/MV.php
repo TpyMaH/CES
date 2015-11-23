@@ -12,17 +12,23 @@
  * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+namespace ces\models\exec;
 
-ini_set('display_errors', 1);
+use \ces\models\Exec;
 
-set_time_limit(9999);
-
-if ((include dirname(__FILE__) . "/config.php")) {
-    if (include(dirname(__FILE__) . "/lib/Ces.php")) {
-        \ces\Ces::run();
-    } else {
-        die('Can\'t find function library.');
+/**
+ * Class MV
+ * @package ces\models\exec
+ */
+class MV extends CP
+{
+    /**
+     * @inheritdoc
+     */
+    public function __construct($data)
+    {
+        parent::__construct($data);
+        $this->_name = 'mv';
+        $this->setExecPath();
     }
-} else {
-    die('Can\'t find config file.');
 }

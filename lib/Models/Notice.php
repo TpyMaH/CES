@@ -14,11 +14,13 @@
  */
 namespace ces\models;
 
-use ces\core\Model as Model;
-use ces\core\Task as Task;
+use \ces\Ces;
+use \ces\core\Model;
+use \ces\core\Task;
 
 /**
- * Class ModelNotice
+ * Class Notice
+ * @package ces\models
  */
 class Notice extends Model
 {
@@ -29,7 +31,6 @@ class Notice extends Model
     protected $error = false;
 
     public $sms = true;
-
 
     /**
      * @param $task
@@ -90,7 +91,7 @@ class Notice extends Model
     /**
      * set error of task
      */
-    public function TaskError()
+    public function taskError()
     {
         $this->error = true;
     }
@@ -143,18 +144,18 @@ class Notice extends Model
             return;
         }
 
-        $this->PrepareMessegeHeader();
-        $this->PrepareReportData();
+        $this->prepareMessegeHeader();
+        $this->prepareReportData();
 
         if ($this->error) {
             $log = $this->log();
         } else {
-            $log = array('email' => TRUE, 'sms' => TRUE);
+            $log = array('email' => true, 'sms' => true);
         }
 
         $mail = new Mail();
 
-        $message = $this->MessegeTemplate();
+        $message = $this->messegeTemplate();
         $mail->addMessage($message);
         $mail->addAttachment(Ces::log()->flogPath(), "application/txt");
         $mail->buildMessage();
@@ -169,7 +170,8 @@ class Notice extends Model
                     $mail->sendError();
                 }
                 $sms = new Sms();
-                $smsMessage = 'CES error on - ' . $this->reportData['header']['hostname'] . ' (' . implode(" ", $this->reportData['header']['ip']) . ')';
+                $smsMessage = 'CES error on - ' . $this->reportData['header']['hostname']
+                    . ' (' . implode(" ", $this->reportData['header']['ip']) . ')';
                 if ($log['sms']) {
                     $sms->send($smsMessage);
                 }
@@ -216,14 +218,17 @@ class Notice extends Model
         }
 
         if (isset($data['global']['first'])) {
-            $first = FALSE;
+            $first = false;
         } else {
-            $first = TRUE;
+            $first = true;
         }
 
         $data['global']['first'] = isset($data['global']['first']) ? $data['global']['first'] : time();
 
-        Task::$config['noticeconf'] = isset(Task::$config['noticeconf']) ? Task::$config['noticeconf'] : array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
+        if (!isset(Task::$config['noticeconf'])) {
+            Task::$config['noticeconf'] = array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
+
+        }
         $config = Task::$config['noticeconf'];
 
         if ($config['repeat']) {
@@ -237,7 +242,7 @@ class Notice extends Model
             } else {
                 $email = false;
                 if (isset($data['global']['sms']) && $data['global']['sms']) {
-                    $this->sms = FALSE;
+                    $this->sms = false;
                 }
             }
         }
@@ -260,7 +265,7 @@ class Notice extends Model
     /**
      * Prepare the report data
      */
-    public function PrepareReportData()
+    public function prepareReportData()
     {
         $report['global']['total'] = count($this->taskList);
         $report['global']['completed'] = 0;
@@ -278,23 +283,25 @@ class Notice extends Model
     /**
      * Prepare headers
      */
-    public function PrepareMessegeHeader()
+    public function prepareMessegeHeader()
     {
         $exec = new Exec('', 'notice');
 
         $data = array();
 
-        $exec->doExec("hostname", TRUE, $data['hostname'], false);
+        $exec->doExec("hostname", true, $data['hostname'], false);
         $data['hostname'] = $data['hostname'][0];
 
-        //$exec->DoExec("ifconfig | grep -B1 \"inet addr\" | awk '{ if ( $1 == \"inet\" ) { print $2 } else if ( $2 == \"Link\" ) { printf \"%s:\" ,$1 } }' | awk -F: '{ print $3 }'", TRUE, $data['ip'], false);
-        $exec->doExec("/sbin/ifconfig -a | grep inet | grep -v '127.0.0.1' | egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | awk '{print $2}'", TRUE, $data['ip'], false);
+
+        $command = "/sbin/ifconfig -a | grep inet | grep -v '127.0.0.1' |"
+            . " egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | awk '{print $2}'";
+        $exec->doExec($command, true, $data['ip'], false);
         $key = array_search('127.0.0.1', $data['ip']);
-        if ($key !== FALSE) {
+        if ($key !== false) {
             unset($data['ip'][$key], $key);
         }
 
-        $exec->doExec("uptime", TRUE, $data['uptime'], false);
+        $exec->doExec("uptime", true, $data['uptime'], false);
         $data['uptime'] = $data['uptime'][0];
 
         $this->reportData['header'] = $data;
@@ -302,10 +309,9 @@ class Notice extends Model
 
     /**
      * @param $time
-     * @param string $type
      * @return string
      */
-    public function showPeriod($time, $type = 'short')
+    public function showPeriod($time)
     {
         $floortime = floor($time);
         if ($floortime < 60) {
@@ -339,13 +345,16 @@ class Notice extends Model
     /**
      * @return string
      */
-    public function MessegeTemplate()
+    public function messegeTemplate()
     {
         $data = $this->reportData;
         $header = $data['header'];
         $global = $data['global'];
         $tasks = $data['tasks'];
-        $messege = "
+        $ips = implode(" ", $header['ip']);
+        $date = date("H:i:s d/m/Y");
+        $color = $global['completed'] == $global['total'] ? "green" : "red";
+        $message = <<<MESSAGE
 <html>
     <head>
     </head>
@@ -353,12 +362,15 @@ class Notice extends Model
         <center>
             <br />
             <br />
-            <p><b><span style='color: #660000;'>" . $header['hostname'] . " (" . implode(" ", $header['ip']) . ")</span></b></p>
-            <p><b><span style='color: #660000;'>Статиcтика " . date("H:i:s d/m/Y") . "</span></b></p>
-            <p><b><span style='color: #660000;'>Uptime " . $header['uptime'] . "</span></b></p>
-            <p><b><span style='color: " . ($global['completed'] == $global['total'] ? "green" : "red") . ";'>Выполнено " . $global['completed'] . " из " . $global['total'] . " задач.</span></b></p>
+            <p><b><span style='color: #660000;'>{$header['hostname']} ({$ips})</span></b></p>
+            <p><b><span style='color: #660000;'>Статиcтика {{$date}}</span></b></p>
+            <p><b><span style='color: #660000;'>Uptime {$header['uptime']}</span></b></p>
+            <p><b>
+                <span style='color: {$color};'>Выполнено {$global['completed']} из {$global['total']} задач.</span>
+            </b></p>
         </center>
-        <table border='1' cellspacing='0' cellpadding='0' width='100%' style='width: 100.0%; border-collapse: collapse; border: none;'>
+        <table border='1' cellspacing='0'
+            cellpadding='0' width='100%' style='width: 100.0%; border-collapse: collapse; border: none;'>
             <thead>
                 <tr style='height: 25px;'>
                     <th style='text-align: center;'>№</th>
@@ -371,41 +383,45 @@ class Notice extends Model
                     <th style='text-align: center;'>Status</th>
                 </tr>
             </thead>
-            <tbody>";
+            <tbody>
+MESSAGE;
+
         $i = 1;
         foreach ($tasks as $task) {
-            $messege .= "<tr style='height: 25px;'>\n";
-            $messege .= "<td style='text-align: center;'>" . $i . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $task['name'] . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $task['start'] . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $task['end'] . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $this->showPeriod($task['mend'] - $task['mstart']) . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $task['total'] . "</td>\n";
-            $messege .= "<td style='text-align: center;'>" . $task['completed'] . "</td>\n";
-            $messege .= "<td style='text-align: center;"
-                . ($task['total'] != $task['completed'] ? " background:red; color: white;" : "")
-                . "'>"
-                . ($task['total'] == $task['completed'] ? "OK" : "<b>ERROR</b>") . "</td>\n";
-            $messege .= "</tr>\n";
+            $performed = $this->showPeriod($task['mend'] - $task['mstart']);
+            $background = $task['total'] != $task['completed'] ? " background:red; color: white;" : "";
+            $status = $task['total'] == $task['completed'] ? "OK" : "<b>ERROR</b>";
+            $message .= <<<MESSAGE
+                <tr style='height: 25px;'>
+                    <td style='text-align: center;'>{$i}</td>
+                    <td style='text-align: center;'>{$task['name']}</td>
+                    <td style='text-align: center;'>{$task['start']}</td>
+                    <td style='text-align: center;'>{$task['end']}</td>
+                    <td style='text-align: center;'>{$performed}</td>
+                    <td style='text-align: center;'>{$task['total']}</td>
+                    <td style='text-align: center;'>{$task['completed']}</td>
+                    <td style='text-align: center;{$background}'>{$status}</td>
+                </tr>
+MESSAGE;
             $i++;
         }
 
-        $messege .= "
+        $message .= <<<MESSAGE
             </tbody>
-        </table>";
+        </table>
+MESSAGE;
+
         foreach ($tasks as $task) {
-            $messege .= "
+            $background = $task['total'] == $task['completed'] ? " background: silver;" : " background: red;";
+            $message .= <<<MESSAGE
             <br />
             <br />
-            <table border='1' cellspacing='0' cellpadding='0' width='100%' style='width: 100.0%; border-collapse: collapse; border: none;'>
+            <table border='1' cellspacing='0' cellpadding='0' width='100%'
+             style='width: 100.0%; border-collapse: collapse; border: none;'>
                 <thead>
-                    <caption style='line-height:25px; color: white;"
-                . ($task['total'] == $task['completed'] ? " background: silver;" : " background: red;")
-                . "'><b>task: \""
-                . $task['name']
-                . "\" ("
-                . $task['completed'] . " completed commands of " . $task['total']
-                . ")<b></caption>
+                    <caption style='line-height:25px; color: white; {$background}>
+                        <b>task: \"{$task['name']}\" ({$task['completed']}completed commands of {$task['total']})<b>
+                    </caption>
                     <tr style='height: 25px;'>
                         <th style='text-align: center;'>№</th>
                         <th style='text-align: center;'>Name</th>
@@ -416,51 +432,59 @@ class Notice extends Model
                         <th style='text-align: center;'>Status</th>
                     </tr>
                 </thead>
-                <tbody>";
+                <tbody>
+MESSAGE;
             $i = 1;
             foreach ($task['commands'] as $command) {
                 if ($command['status'] == 1 && $command['hide'] == true) {
                     $i++;
                     continue;
                 } else {
-                    $messege .= "<tr style='height: 25px;'>\n";
-                    $messege .= "<td style='text-align: center;'>" . $i . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . $command['name'] . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . $command['start'] . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . $command['end'] . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . $this->showPeriod($command['mend'] - $command['mstart']) . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . (isset($command['return']) ? $command['return'] : "") . "</td>\n";
-                    $messege .= "<td style='text-align: center;" . ($command['status'] ? "" : " background:red; color: white;")
-                        . "'>"
-                        . ($command['status'] ? "OK" : "<b>ERROR</b>")
-                        . "</td>\n";
-                    $messege .= "</tr>\n";
+                    $performed = $this->showPeriod($command['mend'] - $command['mstart']);
+                    $return = isset($command['return']) ? $command['return'] : "";
+                    $background = $command['status'] ? "" : " background:red; color: white;";
+                    $status = $command['status'] ? "OK" : "<b>ERROR</b>";
+                    $message .= <<<MESSAGE
+                    <tr style='height: 25px;'>\n";
+                        <td style='text-align: center;'>{$i}</td>
+                        <td style='text-align: center;'>{$command['name']}</td>
+                        <td style='text-align: center;'>{$command['start']}</td>
+                        <td style='text-align: center;'>{$command['end']}</td>
+                        <td style='text-align: center;'>{$performed}</td>
+                        <td style='text-align: center;'>{$return}</td>
+                        <td style='text-align: center;{$background}'>{$status}</td>
+                    </tr>
+MESSAGE;
                     $i++;
                 }
             }
             if (!empty($task['commandList'])) {
                 foreach ($task['commandList'] as $command) {
-                    $messege .= "<tr style='height: 25px;'>\n";
-                    $messege .= "<td style='text-align: center;'>" . $i . "</td>\n";
-                    $messege .= "<td style='text-align: center;'>" . $command[0] . "</td>\n";
-                    $messege .= "<td style='text-align: center;'></td>\n";
-                    $messege .= "<td style='text-align: center;'></td>\n";
-                    $messege .= "<td style='text-align: center;'></td>\n";
-                    $messege .= "<td style='text-align: center;'></td>\n";
-                    $messege .= "<td style='text-align: center; background:red; color: white;'><b>ERROR</b></td>\n";
-                    $messege .= "</tr>\n";
+                    $message .= <<<MESSAGE
+                    <tr style='height: 25px;'>
+                    <td style='text-align: center;'>{$i}</td>
+                    <td style='text-align: center;'>{$command[0]}</td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center; background:red; color: white;'><b>ERROR</b></td>
+                    </tr>\n";
+MESSAGE;
                     $i++;
                 }
             }
-            $messege .= "
+            $message .= <<<MESSAGE
                 </tbody>
             </table>
             <br />
-            <br />";
+            <br />
+MESSAGE;
         }
-        $messege .= "
+        $message .= <<<MESSAGE
     </body>
-</html>";
-        return $messege;
+</html>
+MESSAGE;
+        return $message;
     }
 }

@@ -17,21 +17,19 @@ namespace ces\models\exec;
 use \ces\Ces;
 use \ces\models\Exec;
 
-/**
- * Class Model_Exec_du
- * @package ces\models\exec
- */
-class DU extends Exec
+class RM extends Exec
 {
     /**
      * @inheritdoc
      */
     public function __construct($data)
     {
-        $this->_name = 'du';
+        $this->_name = 'rm';
 
         $commandParams['what'] = array_shift($data);
-
+        if (is_array($data) && !empty($data)) {
+            $commandParams['options'] = array_shift($data);
+        }
         if (is_array($data) && !empty($data)) {
             $commandParams['comment'] = array_shift($data);
         }
@@ -49,28 +47,23 @@ class DU extends Exec
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
-        $command = "du -sh " . $this->commandParams['what'] . " | awk '{ print $1}'";
-        $return = null;
-        if ($this->doExec($command, true, $return)) {
-            if (empty($return)) {
-                $return = 'path error';
-            } else {
-                $return = $return[0];
-            }
+        $this->PrepareOptions();
+        $this->implodePreparedOptions();
 
-            if (isset($this->commandParams['comment'])) {
-                $return .= " (" . $this->commandParams['comment'] . ")";
-            }
-            Ces::notice()->commandReturn($return);
-
-            $funcReturn = ((isset($funcReturn) && $funcReturn === false) ? false : true);
+        $command = $this->execPath . " " . $this->prepareCommand['options'] . " " . $this->commandParams['what'];
+        if ($this->doExec($command, true)) {
+            $funcReturn = true;
         } else {
             $message = "Can't exec '" . $command . "' in '"
                 . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
             Ces::log()->log($message, LOG_WARNING);
             $funcReturn = false;
         }
-
+        $return = "";
+        if (isset($this->commandParams['comment'])) {
+            $return .= " (" . $this->commandParams['comment'] . ")";
+        }
+        Ces::notice()->commandReturn($return);
         return $funcReturn;
     }
 }

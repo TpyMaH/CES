@@ -1,4 +1,17 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace ces\models\exec;
 
 use \ces\Ces;
@@ -10,6 +23,9 @@ use \ces\models\Exec;
  */
 class CP extends Exec
 {
+    /**
+     * @inheritdoc
+     */
     public function __construct($data)
     {
         $this->name = 'cp';
@@ -29,6 +45,9 @@ class CP extends Exec
         parent::__construct($commandParams);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
@@ -38,9 +57,10 @@ class CP extends Exec
 
         $return2 = "";
 
-        $command = $this->execPath . " " . $this->prepareCommand['options'] . " " . $this->commandParams['from'] . " " . $this->commandParams['to'];
+        $command = $this->execPath . " " . $this->prepareCommand['options'] . " "
+            . $this->commandParams['from'] . " " . $this->commandParams['to'];
         if ($this->doExec($command, true)) {
-            $funcReturn = TRUE;
+            $funcReturn = true;
 
             $command2 = "du -sh " . $this->commandParams['to'] . " | awk '{ print $1}'";
             if ($this->doExec($command2, true, $return2)) {
@@ -51,7 +71,9 @@ class CP extends Exec
                 }
             }
         } else {
-            Ces::log()->log("Can't exec '" . $command . "' in '" . $this->name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            $message = "Can't exec '" . $command . "' in '"
+                . $this->name . "' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
             $funcReturn = false;
         }
         $return = $return2;
@@ -62,5 +84,3 @@ class CP extends Exec
         return $funcReturn;
     }
 }
-
-?>

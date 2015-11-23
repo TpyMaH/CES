@@ -1,11 +1,31 @@
 <?php
+/**
+ * CES - Cron Exec System
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace ces\models\exec;
 
 use \ces\Ces;
 use \ces\models\Exec;
 
-class Model_Exec_raid extends Model_Exec
+/**
+ * Class Raid
+ * @package ces\models\exec
+ */
+class Raid extends Exec
 {
+    /**
+     * @inheritdoc
+     */
     public function __construct($data)
     {
         $this->_name = 'raid';
@@ -18,17 +38,20 @@ class Model_Exec_raid extends Model_Exec
         parent::__construct($commandParams);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
-
         $data['command'] = $this->_name;
-        $data['start'] = microtime(TRUE);
-
+        $data['start'] = microtime(true);
 
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
         if (!is_resource(($handle = @fopen("/proc/mdstat", "rb")))) {
-            Ces::log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            $message = "Can't exec '" . $this->_name
+                . "' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
             return false;
         }
         $flag = false;
@@ -49,18 +72,17 @@ class Model_Exec_raid extends Model_Exec
 
         Ces::notice()->commandReturn(($i - $j) . '/' . $i);
 
-        $data['end'] = microtime(TRUE);
+        $data['end'] = microtime(true);
         Ces::log()->flog($data);
 
         if (!$flag) {
-            $funcReturn = TRUE;
+            $funcReturn = true;
         } else {
-            Ces::log()->log("Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
-            $funcReturn = FALSE;
+            $message = "Can't exec '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
+            $funcReturn = false;
         }
 
         return $funcReturn;
     }
 }
-
-?>

@@ -18,20 +18,22 @@ use \ces\Ces;
 use \ces\models\Exec;
 
 /**
- * Class Model_Exec_du
+ * Class KillAll
  * @package ces\models\exec
  */
-class DU extends Exec
+class KillAll extends Exec
 {
     /**
      * @inheritdoc
      */
     public function __construct($data)
     {
-        $this->_name = 'du';
+        $this->_name = 'killall';
 
         $commandParams['what'] = array_shift($data);
-
+        if (is_array($data) && !empty($data)) {
+            $commandParams['options'] = array_shift($data);
+        }
         if (is_array($data) && !empty($data)) {
             $commandParams['comment'] = array_shift($data);
         }
@@ -45,32 +47,40 @@ class DU extends Exec
     /**
      * @inheritdoc
      */
+    protected function parseOptions()
+    {
+        if (isset($this->commandParams['options'])) {
+            $options = $this->commandParams['options'];
+            if (is_array($options)) {
+                $options = array_shift($options);
+            }
+            $this->commandParams['options'] = $options;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
-        $command = "du -sh " . $this->commandParams['what'] . " | awk '{ print $1}'";
-        $return = null;
-        if ($this->doExec($command, true, $return)) {
-            if (empty($return)) {
-                $return = 'path error';
-            } else {
-                $return = $return[0];
-            }
-
-            if (isset($this->commandParams['comment'])) {
-                $return .= " (" . $this->commandParams['comment'] . ")";
-            }
-            Ces::notice()->commandReturn($return);
-
-            $funcReturn = ((isset($funcReturn) && $funcReturn === false) ? false : true);
+        $command = $this->execPath . " " . $this->commandParams['options'] . " " . $this->commandParams['what'];
+        if ($this->doExec($command, true)) {
+            $funcReturn = true;
         } else {
             $message = "Can't exec '" . $command . "' in '"
                 . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";
             Ces::log()->log($message, LOG_WARNING);
-            $funcReturn = false;
+            $funcReturn = true;
         }
-
+        $return = "";
+        if (isset($this->commandParams['comment'])) {
+            $return .= " (" . $this->commandParams['comment'] . ")";
+        }
+        Ces::notice()->commandReturn($return);
         return $funcReturn;
     }
 }
