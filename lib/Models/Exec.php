@@ -45,7 +45,7 @@ class Exec extends Model
     /**
      * @return bool
      */
-    public function getHideStatus()
+    public function isHideStatus()
     {
         if (isset($this->commandParams['hide'])) {
             return $this->commandParams['hide'];

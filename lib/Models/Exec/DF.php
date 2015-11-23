@@ -62,14 +62,14 @@ class DF extends Exec
         if ($this->doExec($command, true, $return)) {
             if (empty($return)) {
                 $return = 'path error';
-                $a = false;
+                $hasSize = false;
             } else {
                 $return = $return[0];
-                $a = true;
+                $hasSize = true;
             }
-            if ($a && isset($this->commandParams['limit'])) {
-                $t = str_replace("%", "", $return);
-                if ($t >= $this->commandParams['limit']) {
+            if ($hasSize && isset($this->commandParams['limit'])) {
+                $sizePercent = str_replace("%", "", $return);
+                if ($sizePercent >= $this->commandParams['limit']) {
                     $funcReturn = false;
                     $message = "Space limit in '" . $command . "' in '"
                         . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.";

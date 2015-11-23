@@ -82,7 +82,7 @@ class Ces
 
             while ($currentCommand = $taskCommands->next()) {
                 $notice->startCommand($taskCommands->commandClass());
-                if ($currentCommand->getHideStatus()) {
+                if ($currentCommand->isHideStatus()) {
                     $notice->commandHide();
                 }
                 if ($currentCommand->run()) {
