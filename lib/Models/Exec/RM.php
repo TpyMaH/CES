@@ -17,6 +17,10 @@ namespace ces\models\exec;
 use \ces\Ces;
 use \ces\models\Exec;
 
+/**
+ * Class RM
+ * @package ces\models\exec
+ */
 class RM extends Exec
 {
     /**

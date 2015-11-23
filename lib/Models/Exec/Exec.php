@@ -25,6 +25,9 @@ class Exec extends CoreExec
 {
     private $commands;
 
+    /**
+     * @inheritdoc
+     */
     public function __construct($data)
     {
         $this->_name = 'exec';
@@ -49,6 +52,9 @@ class Exec extends CoreExec
         parent::__construct($commandParams);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();

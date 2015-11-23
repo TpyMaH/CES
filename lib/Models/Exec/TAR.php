@@ -91,6 +91,9 @@ class TAR extends Exec
         $this->prepareCommand['options'] = $options;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function run()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();

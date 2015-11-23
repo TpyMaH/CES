@@ -102,8 +102,10 @@ class Sms extends Model
         return true;
     }
 
-    /*
+    /**
      * Отсылает sms.
+     * @param $message
+     * @return bool
      */
     public function send($message)
     {
