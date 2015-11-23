@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 /**
  * CES - Cron Exec System
@@ -10,7 +9,7 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,4 +28,3 @@ if ((include BACKUP_ROOT . "/config.php")) {
 } else {
     die('Can\'t find config file.');
 }
-?>

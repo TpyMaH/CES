@@ -9,14 +9,18 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+namespace ces\core;
+
+use \ces\Ces;
 
 /**
- * Class CCommand
+ * Class Command
+ * @package ces\core
  */
-class CCommand
+class Command
 {
     public $types = array(
         'tar' => 'Model_Exec_tar',
@@ -36,11 +40,11 @@ class CCommand
         'timekill' => 'Model_Exec_timekill'
     );
 
-    protected $_commandList;
-    protected $_currentCommand;
-    protected $_currentCommandClass;
-    protected $_currentCommandObj;
-    protected $_finishedCommands;
+    protected $commandList;
+    protected $currentCommand;
+    protected $currentCommandClass;
+    protected $currentCommandObj;
+    protected $finishedCommands;
 
     /**
      * @param $commandList
@@ -50,32 +54,37 @@ class CCommand
         if (!isset($commandList['command'])) {
             $commandList['command'] = array();
         }
-        $this->_commandList = $commandList['command'];
+        $this->commandList = $commandList['command'];
     }
 
     /**
-     * @return bool|Model_Exec
-     * @throws Exception
+     * @return bool|\ces\models\Exec
+     * @throws \Exception
      */
     public function next()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
-        if (is_object($this->_currentCommandObj)) {
-            Ces::log()->Log("End '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
+        if (is_object($this->currentCommandObj)) {
+            $message = "End '" . $this->currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->Log($message);
         }
-        if (is_array($this->_commandList) && !empty($this->_commandList)) {
-            $command = array_shift($this->_commandList);
+        if (is_array($this->commandList) && !empty($this->commandList)) {
+            $command = array_shift($this->commandList);
             if (is_array($command) && !empty($command)) {
-                $this->_currentCommand = $command;
-                Ces::log()->log("Start '" . $this->_currentCommand[0] . "' command of '" . $currentTaskInfo['name'] . "' task.");
-                $this->_currentCommandObj = $this->setCommandObj();
-                return $this->_currentCommandObj;
+                $this->currentCommand = $command;
+                $message = "Start '"
+                    . $this->currentCommand[0]
+                    . "' command of '"
+                    . $currentTaskInfo['name'] . "' task.";
+                Ces::log()->log($message);
+                $this->currentCommandObj = $this->setCommandObj();
+                return $this->currentCommandObj;
             } else {
-                Ces::log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                $message = "Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.";
+                Ces::log()->log($message, LOG_WARNING);
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -83,36 +92,38 @@ class CCommand
      */
     public function commandClass()
     {
-        return $this->_currentCommandClass;
+        return $this->currentCommandClass;
     }
 
 
     /**
-     * @return bool|Model_Exec
-     * @throws Exception
+     * @return bool|\ces\models\Exec
+     * @throws \Exception
      */
     protected function setCommandObj()
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
         $types = $this->types;
-        $command = $this->_currentCommand;
+        $command = $this->currentCommand;
         if (is_array($command) && !empty($command)) {
             $commandClass = array_shift($command);
-            $this->_currentCommandClass = $commandClass;
+            $this->currentCommandClass = $commandClass;
             if (isset($types[$commandClass])) {
                 $class = $types[$commandClass];
                 return new $class($command);
             } else {
                 Ces::notice()->TaskError();
-                Ces::log()->log("Unknow command - '" . $this->_currentCommand[0] . "' of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+                $message = "Unknown command - '"
+                    . $this->currentCommand[0]
+                    . "' of '" . $currentTaskInfo['name']
+                    . "' task.";
+                Ces::log()->log($message, LOG_WARNING);
                 return false;
             }
         } else {
-            Ces::log()->log("Params error in unknow command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
+            $message = "Params error in unknown command of '" . $currentTaskInfo['name'] . "' task.";
+            Ces::log()->log($message, LOG_WARNING);
             return false;
         }
     }
-
 }
-
-?>

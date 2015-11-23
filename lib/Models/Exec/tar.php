@@ -1,6 +1,13 @@
 <?php
-class Model_Exec_tar extends Model_Exec{
-    public function __construct($data) {
+namespace ces\models\exec;
+
+use \ces\Ces;
+use \ces\models\Exec;
+
+class Model_Exec_tar extends Model_Exec
+{
+    public function __construct($data)
+    {
         $this->_name = 'tar';
         $this->_requiredOptions = array(
             'c',
@@ -8,32 +15,33 @@ class Model_Exec_tar extends Model_Exec{
             'l',
             'f',
         );
-        
+
         $commandParams['file'] = array_shift($data);
         $commandParams['path'] = array_shift($data);
-        if (is_array($data) && !empty($data)){
+        if (is_array($data) && !empty($data)) {
             $commandParams['options'] = array_shift($data);
         }
-        if (is_array($data) && !empty($data)){
+        if (is_array($data) && !empty($data)) {
             $commandParams['comment'] = array_shift($data);
         }
-        if (is_array($data) && !empty($data)){
+        if (is_array($data) && !empty($data)) {
             $commandParams['userCommand'] = array_shift($data);
         }
-        if (is_array($data) && !empty($data)){
+        if (is_array($data) && !empty($data)) {
             $commandParams['ignoreCommand'] = array_shift($data);
         }
-        if (is_array($data) && !empty($data)){
+        if (is_array($data) && !empty($data)) {
             $commandParams['hide'] = array_shift($data);
             unset($data);
         }
         parent::__construct($commandParams);
     }
-    
-    protected function ImplodePreparedOptions(){
+
+    protected function ImplodePreparedOptions()
+    {
         $options = "-";
-        foreach ($this->_prepareCommand['options'] as $option){
-            switch ($option){
+        foreach ($this->_prepareCommand['options'] as $option) {
+            switch ($option) {
                 case 'c':
                     $options .= 'c';
                     break;
@@ -54,42 +62,42 @@ class Model_Exec_tar extends Model_Exec{
                     break;
             }
         }
-        if (array_search("f", $this->_requiredOptions)){
+        if (array_search("f", $this->_requiredOptions)) {
             $options = str_replace("f", "", $options) . "f";
         }
         $this->_prepareCommand['options'] = $options;
     }
-    
-    public function run(){
+
+    public function run()
+    {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
-        
+
         $this->PrepareOptions();
         $this->ImplodePreparedOptions();
 
-        $command  = "cd " . $this->_commandParams['path'] . " && ";
-        if (isset($this->_commandParams['userCommand']) && $this->_commandParams['userCommand'] === true){
+        $command = "cd " . $this->_commandParams['path'] . " && ";
+        if (isset($this->_commandParams['userCommand']) && $this->_commandParams['userCommand'] === true) {
             $command .= $this->_execPath . " " . implode("", $this->_commandParams['options']);
-        }
-        else {
+        } else {
             $command .= $this->_execPath . " " . $this->_prepareCommand['options'] . " " . $this->_commandParams['file'] . " .";
         }
-            
-        if ($this->DoExec($command, false, $return, true, $code)){
+
+        if ($this->DoExec($command, false, $return, true, $code)) {
             $funcReturn = TRUE;
-        }
-        else {
+        } else {
             Ces::log()->log("Can't exec '" . $command . "' in 'tar' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
         $return = "code: " . $code;
-        if (isset($this->_commandParams['comment'])){
-            $return .= " (" . $this->_commandParams['comment']. ")";
+        if (isset($this->_commandParams['comment'])) {
+            $return .= " (" . $this->_commandParams['comment'] . ")";
         }
-        Ces::notice()->CommandReturn($return);
-        if (isset($this->_commandParams['ignoreCommand']) && $this->_commandParams['ignoreCommand'] === true){
+        Ces::notice()->commandReturn($return);
+        if (isset($this->_commandParams['ignoreCommand']) && $this->_commandParams['ignoreCommand'] === true) {
             $funcReturn = true;
         }
         return $funcReturn;
     }
 }
+
 ?>

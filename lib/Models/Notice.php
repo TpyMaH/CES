@@ -9,20 +9,25 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+namespace ces\models;
+
+use ces\core\Model as Model;
+use ces\core\Task as Task;
 
 /**
- * Class Model_Notice
+ * Class ModelNotice
  */
-class Model_Notice extends CModel
+class Notice extends Model
 {
-    protected $_task;
-    protected $_taskList = array();
-    protected $_reportData;
-    protected $_command;
-    protected $_error = false;
+    protected $task;
+    protected $taskList = array();
+    protected $reportData;
+    protected $command;
+    protected $error = false;
+
     public $sms = true;
 
 
@@ -31,18 +36,18 @@ class Model_Notice extends CModel
      */
     public function openTask($task)
     {
-        if (!empty($this->_task)) {
-            $this->_task['mend'] = microtime(TRUE);
-            $this->_task['end'] = date("H:i:s");
-            $this->_taskList[] = $this->_task;
-            unset($this->_task);
+        if (!empty($this->task)) {
+            $this->task['mend'] = microtime(true);
+            $this->task['end'] = date("H:i:s");
+            $this->taskList[] = $this->task;
+            unset($this->task);
         }
-        $this->_task['name'] = $task['info']['name'];
-        $this->_task['total'] = isset($task['command']) ? count($task['command']) : 0;
-        $this->_task['commandList'] = isset($task['command']) ? $task['command'] : array();
-        $this->_task['completed'] = 0;
-        $this->_task['mstart'] = microtime(TRUE);
-        $this->_task['start'] = date("H:i:s");
+        $this->task['name'] = $task['info']['name'];
+        $this->task['total'] = isset($task['command']) ? count($task['command']) : 0;
+        $this->task['commandList'] = isset($task['command']) ? $task['command'] : array();
+        $this->task['completed'] = 0;
+        $this->task['mstart'] = microtime(true);
+        $this->task['start'] = date("H:i:s");
     }
 
     /**
@@ -50,14 +55,14 @@ class Model_Notice extends CModel
      */
     public function startCommand($name)
     {
-        if (is_array($this->_task['commandList'])) {
-            array_shift($this->_task['commandList']);
+        if (is_array($this->task['commandList'])) {
+            array_shift($this->task['commandList']);
         }
         $data['name'] = $name;
-        $data['mstart'] = microtime(TRUE);
+        $data['mstart'] = microtime(true);
         $data['start'] = date("H:i:s");
         $data['hide'] = false;
-        $this->_command = $data;
+        $this->command = $data;
     }
 
     /**
@@ -65,7 +70,7 @@ class Model_Notice extends CModel
      */
     public function commandHide()
     {
-        $this->_command['hide'] = true;
+        $this->command['hide'] = true;
     }
 
     /**
@@ -74,12 +79,12 @@ class Model_Notice extends CModel
     public function commandStatus($status)
     {
         if ($status) {
-            $this->_task['completed'] += 1;
+            $this->task['completed'] += 1;
         }
         if (!$status) {
-            $this->_error = true;
+            $this->error = true;
         }
-        $this->_command['status'] = $status ? 1 : 0;
+        $this->command['status'] = $status ? 1 : 0;
     }
 
     /**
@@ -87,15 +92,15 @@ class Model_Notice extends CModel
      */
     public function TaskError()
     {
-        $this->_error = true;
+        $this->error = true;
     }
 
     /**
      * @param $return
      */
-    public function CommandReturn($return)
+    public function commandReturn($return)
     {
-        $this->_command['return'] = $return;
+        $this->command['return'] = $return;
     }
 
     /**
@@ -103,70 +108,70 @@ class Model_Notice extends CModel
      */
     public function endCommand()
     {
-        $this->_command['mend'] = microtime(TRUE);
-        $this->_command['end'] = date("H:i:s");
-        $this->_task['commands'][] = $this->_command;
-        unset($this->_command);
+        $this->command['mend'] = microtime(true);
+        $this->command['end'] = date("H:i:s");
+        $this->task['commands'][] = $this->command;
+        unset($this->command);
     }
 
     /**
-     * @return bool
+     * Finish
      */
     public function finish()
     {
-        if (empty($this->_task) && empty($this->_taskList)) {
-            return false;
+        if (empty($this->task) && empty($this->taskList)) {
+            return;
         }
 
-        if (isset($this->_command) && !isset($this->_command['status'])) {
-            $this->_error = true;
+        if (isset($this->command) && !isset($this->command['status'])) {
+            $this->error = true;
         }
 
-        if (isset($this->_command)) {
+        if (isset($this->command)) {
             $this->endCommand();
         }
 
-        $this->_task['mend'] = microtime(TRUE);
-        $this->_task['end'] = date("H:i:s");
-        $this->_taskList[] = $this->_task;
+        $this->task['mend'] = microtime(true);
+        $this->task['end'] = date("H:i:s");
+        $this->taskList[] = $this->task;
 
-        if (!isset(CTask::$config['notice'])) {
-            CTask::$config['notice'] = 0;
+        if (!isset(Task::$config['notice'])) {
+            Task::$config['notice'] = 0;
         }
 
-        if (isset(CTask::$config['notice']) && CTask::$config['notice'] == 4) {
-            return false;
+        if (isset(Task::$config['notice']) && Task::$config['notice'] == 4) {
+            return;
         }
 
         $this->PrepareMessegeHeader();
         $this->PrepareReportData();
 
-        if ($this->_error) {
+        if ($this->error) {
             $log = $this->log();
         } else {
             $log = array('email' => TRUE, 'sms' => TRUE);
         }
 
-        $mail = new Model_Mail();
+        $mail = new Mail();
 
         $message = $this->MessegeTemplate();
-        $mail->AddMessage($message);
-        $mail->AddAttachment(Ces::log()->flogPath(), "application/txt");
-        $mail->BuildMessage();
+        $mail->addMessage($message);
+        $mail->addAttachment(Ces::log()->flogPath(), "application/txt");
+        $mail->buildMessage();
 
-        if (isset(CTask::$config['notice']) && CTask::$config['notice'] != 1) {
-            $mail->Send();
+        if (isset(Task::$config['notice']) && Task::$config['notice'] != 1) {
+            $mail->send();
         }
 
-        if (isset(CTask::$config['notice']) && CTask::$config['notice'] != 2) {
-            if ($this->_error) {
+        if (isset(Task::$config['notice']) && Task::$config['notice'] != 2) {
+            if ($this->error) {
                 if ($log['email']) {
-                    $mail->SendError();
+                    $mail->sendError();
                 }
-                $sms = new Model_Sms();
-                $smsMessage = 'CES error on - ' . $this->_reportData['header']['hostname'] . ' (' . implode(" ", $this->_reportData['header']['ip']) . ')';
+                $sms = new Sms();
+                $smsMessage = 'CES error on - ' . $this->reportData['header']['hostname'] . ' (' . implode(" ", $this->reportData['header']['ip']) . ')';
                 if ($log['sms']) {
-                    $sms->Send($smsMessage);
+                    $sms->send($smsMessage);
                 }
             }
         }
@@ -177,7 +182,7 @@ class Model_Notice extends CModel
      */
     public function log()
     {
-        $report = $this->_reportData;
+        $report = $this->reportData;
         unset($report["header"]);
 
         foreach ($report['tasks'] as $k => $v) {
@@ -218,8 +223,8 @@ class Model_Notice extends CModel
 
         $data['global']['first'] = isset($data['global']['first']) ? $data['global']['first'] : time();
 
-        CTask::$config['noticeconf'] = isset(CTask::$config['noticeconf']) ? CTask::$config['noticeconf'] : array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
-        $config = CTask::$config['noticeconf'];
+        Task::$config['noticeconf'] = isset(Task::$config['noticeconf']) ? Task::$config['noticeconf'] : array('repeat' => true, 'resetinterval' => 2, 'smsperday' => 5);
+        $config = Task::$config['noticeconf'];
 
         if ($config['repeat']) {
             $email = true;
@@ -240,7 +245,7 @@ class Model_Notice extends CModel
             $data['global']['sms'] = true;
         }
 
-        $data['error'][] = serialize($this->_reportData);
+        $data['error'][] = serialize($this->reportData);
 
         $data = serialize($data);
 
@@ -257,17 +262,17 @@ class Model_Notice extends CModel
      */
     public function PrepareReportData()
     {
-        $report['global']['total'] = count($this->_taskList);
+        $report['global']['total'] = count($this->taskList);
         $report['global']['completed'] = 0;
         $report['tasks'] = array();
-        foreach ($this->_taskList as $key => $value) {
+        foreach ($this->taskList as $key => $value) {
             if (($value['total'] - $value['completed']) == 0) {
                 $report['global']['completed'] += 1;
             }
             $report['tasks'][$key] = $value;
         }
-        $this->_reportData['global'] = $report['global'];
-        $this->_reportData['tasks'] = $report['tasks'];
+        $this->reportData['global'] = $report['global'];
+        $this->reportData['tasks'] = $report['tasks'];
     }
 
     /**
@@ -275,24 +280,24 @@ class Model_Notice extends CModel
      */
     public function PrepareMessegeHeader()
     {
-        $exec = new Model_Exec('', 'notice');
+        $exec = new Exec('', 'notice');
 
         $data = array();
 
-        $exec->DoExec("hostname", TRUE, $data['hostname'], false);
+        $exec->doExec("hostname", TRUE, $data['hostname'], false);
         $data['hostname'] = $data['hostname'][0];
 
         //$exec->DoExec("ifconfig | grep -B1 \"inet addr\" | awk '{ if ( $1 == \"inet\" ) { print $2 } else if ( $2 == \"Link\" ) { printf \"%s:\" ,$1 } }' | awk -F: '{ print $3 }'", TRUE, $data['ip'], false);
-        $exec->DoExec("/sbin/ifconfig -a | grep inet | grep -v '127.0.0.1' | egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | awk '{print $2}'", TRUE, $data['ip'], false);
+        $exec->doExec("/sbin/ifconfig -a | grep inet | grep -v '127.0.0.1' | egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' | awk '{print $2}'", TRUE, $data['ip'], false);
         $key = array_search('127.0.0.1', $data['ip']);
         if ($key !== FALSE) {
             unset($data['ip'][$key], $key);
         }
 
-        $exec->DoExec("uptime", TRUE, $data['uptime'], false);
+        $exec->doExec("uptime", TRUE, $data['uptime'], false);
         $data['uptime'] = $data['uptime'][0];
 
-        $this->_reportData['header'] = $data;
+        $this->reportData['header'] = $data;
     }
 
     /**
@@ -336,7 +341,7 @@ class Model_Notice extends CModel
      */
     public function MessegeTemplate()
     {
-        $data = $this->_reportData;
+        $data = $this->reportData;
         $header = $data['header'];
         $global = $data['global'];
         $tasks = $data['tasks'];
@@ -459,4 +464,3 @@ class Model_Notice extends CModel
         return $messege;
     }
 }
-

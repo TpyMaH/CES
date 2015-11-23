@@ -1,22 +1,18 @@
 <?php
+namespace ces\models\exec;
 
-class Model_Exec_exec extends Model_Exec
+use \ces\Ces;
+use \ces\models\Exec;
+
+class Model_Exec_rm extends Model_Exec
 {
-    private $_commands;
-
     public function __construct($data)
     {
-        $this->_name = 'exec';
+        $this->_name = 'rm';
 
-        $commandParams['command'] = array_shift($data);
-
-        if (array_key_exists('command', $data)) {
-            $this->_commands = $data['command'];
-            unset($data['command']);
-        }
-
+        $commandParams['what'] = array_shift($data);
         if (is_array($data) && !empty($data)) {
-            $commandParams['return'] = array_shift($data);
+            $commandParams['options'] = array_shift($data);
         }
         if (is_array($data) && !empty($data)) {
             $commandParams['comment'] = array_shift($data);
@@ -32,37 +28,22 @@ class Model_Exec_exec extends Model_Exec
     {
         $currentTaskInfo = Ces::task()->currentTaskInfo();
 
-        $command = $this->_commandParams['command'];
+        $this->PrepareOptions();
+        $this->ImplodePreparedOptions();
 
+        $command = $this->_execPath . " " . $this->_prepareCommand['options'] . " " . $this->_commandParams['what'];
         if ($this->DoExec($command, true)) {
             $funcReturn = TRUE;
         } else {
             Ces::log()->log("Can't exec '" . $command . "' in '" . $this->_name . "' command of '" . $currentTaskInfo['name'] . "' task.", LOG_WARNING);
             $funcReturn = FALSE;
         }
-        if (isset($this->_commandParams['return']) && $this->_commandParams['return'] == FALSE) {
-            $funcReturn = TRUE;
-        }
-
-        $this->_supportCommandRun($funcReturn ? 'success' : 'error');
-
         $return = "";
         if (isset($this->_commandParams['comment'])) {
             $return .= " (" . $this->_commandParams['comment'] . ")";
         }
-        Ces::notice()->CommandReturn($return);
+        Ces::notice()->commandReturn($return);
         return $funcReturn;
-    }
-
-    /**
-     * @param $type
-     * @return bool
-     */
-    private function _supportCommandRun($type)
-    {
-        if (array_key_exists($type, $this->_commands) && !empty($this->_commands[$type])) {
-            return $this->DoExec($this->_commands[$type], true);
-        }
     }
 }
 

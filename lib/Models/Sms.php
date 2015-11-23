@@ -9,20 +9,26 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+namespace ces\models;
+
+use ces\Ces;
+use ces\core\Model;
+use ces\core\Task;
 
 /**
- * Class Model_Sms
+ * Class Sms
+ * @package ces\models
  */
-class Model_Sms extends CModel
+class Sms extends Model
 {
 
-    protected $_config;
-    protected $_data;
-    protected $_counter;
-    protected $_counterPath;
+    protected $config;
+    protected $data;
+    protected $counter;
+    protected $counterPath;
 
     /**
      * Constructor
@@ -30,29 +36,29 @@ class Model_Sms extends CModel
     public function __construct()
     {
         global $sysSms;
-        $this->_counterPath = BACKUP_ROOT . "/tmp/sms/" . date("Ymd");
-        if (!is_dir(dirname($this->_counterPath))) {
-            mkdir(dirname($this->_counterPath), 0777, true);
+        $this->counterPath = BACKUP_ROOT . "/tmp/sms/" . date("Ymd");
+        if (!is_dir(dirname($this->counterPath))) {
+            mkdir(dirname($this->counterPath), 0777, true);
         }
-        if (is_file($this->_counterPath)) {
-            $this->_counter = file_get_contents($this->_counterPath);
+        if (is_file($this->counterPath)) {
+            $this->counter = file_get_contents($this->counterPath);
         } else {
-            $this->_counter = 0;
+            $this->counter = 0;
         }
 
-        $this->_config['enabled'] = isset($sysSms['enabled']) ? $sysSms['enabled'] : false;
-        $this->_config['serverHost'] = isset($sysSms['serverHost']) ? $sysSms['serverHost'] : false;
-        $this->_config['sendPage'] = isset($sysSms['sendPage']) ? $sysSms['sendPage'] : false;
+        $this->config['enabled'] = isset($sysSms['enabled']) ? $sysSms['enabled'] : false;
+        $this->config['serverHost'] = isset($sysSms['serverHost']) ? $sysSms['serverHost'] : false;
+        $this->config['sendPage'] = isset($sysSms['sendPage']) ? $sysSms['sendPage'] : false;
 
-        $this->_config['encoding'] = '1'; //UTF-8
+        $this->config['encoding'] = '1'; //UTF-8
 
-        $this->_config['number'] = isset($sysSms['number']) ? $sysSms['number'] : array();
+        $this->config['number'] = isset($sysSms['number']) ? $sysSms['number'] : array();
 
-        if (!empty($this->_config['number']) && !is_array($this->_config['number'])) {
-            $this->_config['number'] = array($this->_config['number']);
+        if (!empty($this->config['number']) && !is_array($this->config['number'])) {
+            $this->config['number'] = array($this->config['number']);
         }
 
-        $this->_config['taskId'] = isset($sysSms['taskId']) ? $sysSms['taskId'] : false;
+        $this->config['taskId'] = isset($sysSms['taskId']) ? $sysSms['taskId'] : false;
 
     }
 
@@ -83,8 +89,8 @@ class Model_Sms extends CModel
      */
     protected function check()
     {
-        if ($this->_config['serverHost'] && $this->pingDomain($this->_config['serverHost']) > -1) {
-            foreach ($this->_config['number'] as $number) {
+        if ($this->config['serverHost'] && $this->pingDomain($this->config['serverHost']) > -1) {
+            foreach ($this->config['number'] as $number) {
                 if (strlen($number) != 11) {
                     Ces::log()->log("Can't send SMS. Incorrect phone number - " . $number, LOG_WARNING);
                     return false;
@@ -100,42 +106,40 @@ class Model_Sms extends CModel
     /*
      * Отсылает sms.
      */
-    public function Send($message)
+    public function send($message)
     {
-        if ($this->_counter >= CTask::$config['noticeconf']['smsperday']) {
+        if ($this->counter >= Task::$config['noticeconf']['smsperday']) {
             Ces::log()->log("Can't send SMS. daylimit", LOG_WARNING);
             return false;
         }
-        if (!$this->_config['enabled']) {
+        if (!$this->config['enabled']) {
             return false;
         }
 
-        if (isset(CTask::$config['notice']) && CTask::$config['notice'] == 3) {
+        if (isset(Task::$config['notice']) && Task::$config['notice'] == 3) {
             return false;
         }
 
         if ($this->check()) {
-            foreach ($this->_config['number'] as $number) {
-                $url = $this->_config['sendPage']
+            foreach ($this->config['number'] as $number) {
+                $url = $this->config['sendPage']
                     . "?smsphonenumber=" . $number
                     . "&smsmessage=" . str_replace(" ", "%20", $message)
-                    . "&smstask=" . $this->_config['taskId']
-                    . "&encoding=" . $this->_config['encoding'];
+                    . "&smstask=" . $this->config['taskId']
+                    . "&encoding=" . $this->config['encoding'];
 
                 if ($r = file_get_contents($url)) {
                     Ces::log()->log("Send SMS notice.");
-                    file_put_contents($this->_counterPath, ++$this->_counter);
-                    $return = TRUE;
+                    file_put_contents($this->counterPath, ++$this->counter);
+                    $return = true;
                 } else {
                     Ces::log()->log("Can't send SMS. unknow SMS server error.", LOG_WARNING);
-                    $return = FALSE;
+                    $return = false;
                 }
             }
             return $return;
         } else {
-            return FALSE;
+            return false;
         }
     }
 }
-
-?>

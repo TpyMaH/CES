@@ -9,66 +9,72 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <vadim.buchinsky@gmail.com>
+ * @copyright (c) 2015, TpyMaH (Vadims Bucinskis) <v.buchinsky@etwebsolutions.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+namespace ces;
+
+use \ces\core\Log;
+use \ces\core\Task;
+use \ces\models\Notice;
 
 /**
  * Class Ces
  */
 class Ces
 {
-    /** @var  Model_Notice */
-    static protected $_notice;
-    /** @var  CTask */
-    static protected $_task;
-    /** @var  CLog */
-    static protected $_log;
+    /** @var  Notice */
+    static protected $notice;
+    /** @var  Task */
+    static protected $task;
+    /** @var  Log */
+    static protected $log;
 
     static public $basePath;
     static public $version = "0.5.0.0";
 
     /**
-     * @return Model_Notice
+     * @return Notice
      */
-    static public function notice()
+    public static function notice()
     {
-        if (!is_object(self::$_notice)) {
-            self::$_notice = new Model_Notice();
+        if (!is_object(self::$notice)) {
+            self::$notice = new Notice();
         }
-        return self::$_notice;
+        return self::$notice;
     }
 
     /**
-     * @return CTask
-     * @throws Exception
+     * @return Task
+     * @throws \Exception
      */
-    static public function task()
+    public static function task()
     {
-        if (is_object(self::$_task)) {
-            return self::$_task;
+        if (is_object(self::$task)) {
+            return self::$task;
         }
-        throw new Exception('task do not exist');
+        throw new \Exception('task do not exist');
     }
 
     /**
-     * @return CLog
+     * @return Log
      */
-    static public function log()
+    public static function log()
     {
-        if (!is_object(self::$_log)) {
-            self::$_log = new CLog();
+        if (!is_object(self::$log)) {
+            self::$log = new Log();
         }
-        return self::$_log;
+        return self::$log;
     }
 
     /**
      * run
      */
-    static public function run()
+    public static function run()
     {
+        spl_autoload_register(['\\ces\\Ces', 'autoload']);
         self::log();
-        $task = self::$_task = new CTask();
+        $task = self::$task = new Task();
 
         $notice = self::notice();
         while ($taskCommands = $task->next()) {
@@ -80,9 +86,9 @@ class Ces
                     $notice->commandHide();
                 }
                 if ($currentCommand->run()) {
-                    $notice->commandStatus(TRUE);
+                    $notice->commandStatus(true);
                 } else {
-                    $notice->commandStatus(FALSE);
+                    $notice->commandStatus(false);
                     $notice->endCommand();
                     break;
                 }
@@ -93,10 +99,10 @@ class Ces
     }
 
     private static $classMap = array(
-        'CModel'   => '/Core/CModel.php',
-        'CTask'    => '/Core/CTask.php',
+        'CModel' => '/Core/CModel.php',
+        'Task' => '/Core/Task.php',
         'CCommand' => '/Core/CCommand.php',
-        'CLog'     => '/Core/CLog.php',
+        'CLog' => '/Core/CLog.php',
     );
 
     /**
@@ -110,8 +116,8 @@ class Ces
             self::$basePath = realpath(__DIR__ . "/../");
         }
 
-        if (array_key_exists($className, self::$classMap)){
-            $filePath = self::$basePath . '/lib' .self::$classMap[$className];
+        if (array_key_exists($className, self::$classMap)) {
+            $filePath = self::$basePath . '/lib' . self::$classMap[$className];
             require_once($filePath);
             return;
         }
@@ -131,6 +137,4 @@ class Ces
         }
     }
 }
-
-spl_autoload_register(['Ces', 'autoload']);
 

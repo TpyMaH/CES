@@ -1,4 +1,9 @@
 <?php
+namespace ces\models\exec;
+
+use \ces\Ces;
+use \ces\models\Exec;
+
 class Model_Exec_mysqldump extends Model_Exec{
     public function __construct($data) {
         $this->_name = 'mysqldump';
@@ -45,7 +50,7 @@ class Model_Exec_mysqldump extends Model_Exec{
         if (isset($this->_commandParams['comment'])){
             $return .= " (" . $this->_commandParams['comment']. ")";
         }
-        Ces::notice()->CommandReturn($return);
+        Ces::notice()->commandReturn($return);
         return $funcReturn;
     }
 }
