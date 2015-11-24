@@ -23,21 +23,21 @@ use \ces\Ces;
 class Command
 {
     public $types = array(
-        'tar' => 'Model_Exec_tar',
-        'cp' => 'Model_Exec_cp',
-        'mv' => 'Model_Exec_mv',
-        'rm' => 'Model_Exec_rm',
-        'killall' => 'Model_Exec_killall',
-        'mysqldump' => 'Model_Exec_mysqldump',
-        'exec' => 'Model_Exec_exec',
-        'bz2' => 'Model_Exec_bz2',
-        'df' => 'Model_Exec_df',
-        'raid' => 'Model_Exec_raid',
-        'ps' => 'Model_Exec_ps',
-        'httpstat' => 'Model_Exec_httpstat',
-        'du' => 'Model_Exec_du',
-        'ping' => 'Model_Exec_ping',
-        'timekill' => 'Model_Exec_timekill'
+        'bz2' => '\\ces\\models\\exec\\BZ2',
+        'cp' => '\\ces\\models\\exec\\CP',
+        'df' => '\\ces\\models\\exec\\DF',
+        'du' => '\\ces\\models\\exec\\DU',
+        'exec' => '\\ces\\models\\exec\\Exec',
+        'httpstat' => '\\ces\\models\\exec\\HttpStat',
+        'killall' => '\\ces\\models\\exec\\KillAll',
+        'mv' => '\\ces\\models\\exec\\MV',
+        'mysqldump' => '\\ces\\models\\exec\\MysqlDump',
+        'ping' => '\\ces\\models\\exec\\Ping',
+        'ps' => '\\ces\\models\\exec\\PS',
+        'raid' => '\\ces\\models\\exec\\Raid',
+        'tar' => '\\ces\\models\\exec\\TAR',
+        'rm' => '\\ces\\models\\exec\\RM',
+        'timekill' => '\\ces\\models\\exec\\TimeKill'
     );
 
     protected $commandList;

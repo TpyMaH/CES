@@ -14,7 +14,7 @@
  */
 namespace ces\core;
 
-use \ces\Ces as Ces;
+use \ces\Ces;
 
 /**
  * Class Task
@@ -31,11 +31,18 @@ class Task
 
     /**
      * Constructor
+     * TODO: need refactoring;
      */
     public function __construct()
     {
         global $sysTaskStack;
         $stackKey = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'default';
+
+        $path = Ces::$basePath . '/app/stacks/' . $stackKey . '.php';
+
+        if (is_file($path)) {
+            $sysTaskStack[$stackKey] = include($path);
+        }
 
         if (isset($sysTaskStack[$stackKey])) {
             self::$config = isset($sysTaskStack[$stackKey]['config']) ? $sysTaskStack[$stackKey]['config'] : array();

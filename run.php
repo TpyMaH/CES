@@ -17,7 +17,7 @@ ini_set('display_errors', 1);
 
 set_time_limit(9999);
 
-if ((include dirname(__FILE__) . "/config.php")) {
+if ((include dirname(__FILE__) . "/app/config/config.php")) {
     if (include(dirname(__FILE__) . "/lib/Ces.php")) {
         \ces\Ces::run();
     } else {

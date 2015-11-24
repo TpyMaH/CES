@@ -14,6 +14,7 @@
  */
 namespace ces\core;
 
+use \ces\Ces;
 use \ces\models\Exec;
 
 /**
@@ -31,7 +32,7 @@ class Log
     public function __construct()
     {
         $this->sid = time();
-        $this->flog = BACKUP_ROOT . "/tmp/report/report-" . $this->sid . ".txt";
+        $this->flog = Ces::$basePath . "/tmp/report/report-" . $this->sid . ".txt";
         if (!is_dir(dirname($this->flog))) {
             mkdir(dirname($this->flog), 0777, true);
         }
@@ -45,7 +46,7 @@ class Log
     public function log($message, $pririty = LOG_DEBUG)
     {
         if (!\DEBUG && $pririty == LOG_DEBUG) {
-            return;
+            //return;
         }
         syslog($pririty, $message);
     }

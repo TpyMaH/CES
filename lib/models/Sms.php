@@ -36,7 +36,7 @@ class Sms extends Model
     public function __construct()
     {
         global $sysSms;
-        $this->counterPath = BACKUP_ROOT . "/tmp/sms/" . date("Ymd");
+        $this->counterPath = Ces::$basePath . "/tmp/sms/" . date("Ymd");
         if (!is_dir(dirname($this->counterPath))) {
             mkdir(dirname($this->counterPath), 0777, true);
         }

@@ -205,7 +205,7 @@ class Notice extends Model
         }
         $report = serialize($report);
 
-        $filename = BACKUP_ROOT . "/tmp/notice/" . md5($report . date("Ymd"));
+        $filename = Ces::$basePath . "/tmp/notice/" . md5($report . date("Ymd"));
         if (!is_dir(dirname($filename))) {
             mkdir(dirname($filename), 0777, true);
         }
@@ -348,7 +348,7 @@ class Notice extends Model
     public function messegeTemplate()
     {
         ob_start();
-        include __DIR__ . 'messageTemplate.phtml';
+        require __DIR__ . '/messageTemplate.phtml';
         $message = ob_get_contents();
         ob_end_clean();
         return $message;

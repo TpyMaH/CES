@@ -1,0 +1,123 @@
+<?php
+$data = $this->reportData;
+$header = $data['header'];
+$global = $data['global'];
+$tasks = $data['tasks'];
+?>
+<html>
+<head>
+</head>
+<body>
+<center>
+    <br/>
+    <br/>
+
+    <p><b><span style='color: #660000;'><?= $header['hostname'] ?> (<?= implode(" ", $header['ip']) ?>)</span></b></p>
+
+    <p><b><span style='color: #660000;'>Статиcтика <?= date("H:i:s d/m/Y") ?></span></b></p>
+
+    <p><b><span style='color: #660000;'>Uptime <?= $header['uptime'] ?></span></b></p>
+
+    <p>
+        <b><span style='color: <?= $global['completed'] == $global['total'] ? "green" : "red" ?>;'>
+                Выполнено <?= $global['completed'] ?> из <?= $global['total'] ?> задач.</span>
+        </b>
+    </p>
+</center>
+<table border='1' cellspacing='0'
+       cellpadding='0' width='100%' style='width: 100.0%; border-collapse: collapse; border: none;'>
+    <thead>
+    <tr style='height: 25px;'>
+        <th style='text-align: center;'>№</th>
+        <th style='text-align: center;'>Name</th>
+        <th style='text-align: center;'>Start time</th>
+        <th style='text-align: center;'>End time</th>
+        <th style='text-align: center;'>Performed</th>
+        <th style='text-align: center;'>Total</th>
+        <th style='text-align: center;'>Complited</th>
+        <th style='text-align: center;'>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php $i = 1 ?>
+    <?php foreach ($tasks as $task) : ?>
+        <tr style='height: 25px;'>
+            <td style='text-align: center;'><?= $i ?></td>
+            <td style='text-align: center;'><?= $task['name'] ?></td>
+            <td style='text-align: center;'><?= $task['start'] ?></td>
+            <td style='text-align: center;'><?= $task['end'] ?></td>
+            <td style='text-align: center;'><?= $this->showPeriod($task['mend'] - $task['mstart']) ?></td>
+            <td style='text-align: center;'><?= $task['total'] ?></td>
+            <td style='text-align: center;'><?= $task['completed'] ?></td>
+            <?php $background = $task['total'] != $task['completed'] ? " background:red; color: white;" : ""; ?>
+            <td style='text-align: center; <?= $background ?>'>
+                <?= $task['total'] == $task['completed'] ? "OK" : "<b>ERROR</b>" ?>
+            </td>
+        </tr>
+        <?php $i++; ?>
+    <?php endforeach ?>
+    </tbody>
+</table>
+<?php foreach ($tasks as $task) : ?>
+    <br/>
+    <br/>
+    <table border='1' cellspacing='0' cellpadding='0' width='100%'
+           style='width: 100.0%; border-collapse: collapse; border: none;'>
+        <thead>
+        <?php $background = $task['total'] == $task['completed'] ? " background: silver;" : " background: red;" ?>
+        <caption style='line-height:25px; color: white; <?= $background ?>'>
+            <b>task: "<?= $task['name'] ?>" (<?= $task['completed'] ?> completed commands of <?= $task['total'] ?>)</b>
+        </caption>
+        <tr style='height: 25px;'>
+            <th style='text-align: center;'>№</th>
+            <th style='text-align: center;'>Name</th>
+            <th style='text-align: center;'>Start time</th>
+            <th style='text-align: center;'>End time</th>
+            <th style='text-align: center;'>Performed</th>
+            <th style='text-align: center;'>Return</th>
+            <th style='text-align: center;'>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php $i = 1; ?>
+        <?php foreach ($task['commands'] as $command) : ?>
+            <?php if ($command['status'] == 1 && $command['hide'] == true) : ?>
+                <?php $i++; ?>
+                <?php continue; ?>
+            <?php else : ?>
+                <tr style='height: 25px;'>
+                    <td style='text-align: center;'><?= $i ?></td>
+                    <td style='text-align: center;'><?= $command['name'] ?></td>
+                    <td style='text-align: center;'><?= $command['start'] ?></td>
+                    <td style='text-align: center;'><?= $command['end'] ?></td>
+                    <td style='text-align: center;'><?= $this->showPeriod($command['mend'] - $command['mstart']) ?></td>
+                    <td style='text-align: center;'><?= isset($command['return']) ? $command['return'] : "" ?></td>
+                    <td style='text-align: center;<?= $command['status'] ? "" : " background:red; color: white;" ?>'>
+                        <?= $command['status'] ? "OK" : "<b>ERROR</b>" ?>
+                    </td>
+                </tr>
+                <?php $i++ ?>
+            <?php endif ?>
+        <?php endforeach ?>
+        <?php if (!empty($task['commandList'])) : ?>
+            <?php foreach ($task['commandList'] as $command) : ?>
+                <tr style='height: 25px;'>
+                    <td style='text-align: center;'><?= $i ?></td>
+                    <td style='text-align: center;'><?= $command[0] ?></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center;'></td>
+                    <td style='text-align: center; background:red; color: white;'><b>ERROR</b></td>
+                </tr>
+                <?php $i++ ?>
+            <?php endforeach ?>
+        <?php endif ?>
+        </tbody>
+    </table>
+    <br/>
+    <br/>
+<?php endforeach ?>
+</body>
+</html>
+

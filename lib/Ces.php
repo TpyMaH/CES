@@ -98,13 +98,6 @@ class Ces
         $notice->finish();
     }
 
-    private static $classMap = array(
-        'CModel' => '/Core/CModel.php',
-        'Task' => '/Core/Task.php',
-        'CCommand' => '/Core/CCommand.php',
-        'CLog' => '/Core/CLog.php',
-    );
-
     /**
      * @param $className
      *
@@ -115,22 +108,19 @@ class Ces
         if (!self::$basePath) {
             self::$basePath = realpath(__DIR__ . "/../");
         }
+        $aliases = array(
+            'ces' => 'lib'
+        );
 
-        if (array_key_exists($className, self::$classMap)) {
-            $filePath = self::$basePath . '/lib' . self::$classMap[$className];
-            require_once($filePath);
-            return;
-        }
-
-        $path = explode('_', $className);
-        if (strpos($className, '\\') !== false) {
-            $path = explode('\\', $className);
-        }
+        $path = explode('\\', $className);
 
         $class = array_pop($path);
 
+        if (array_key_exists($path[0], $aliases)) {
+            $path[0] = $aliases[$path[0]];
+        }
 
-        $filePath = self::$basePath . '/lib/' . implode('/', $path) . '/' . $class . '.php';
+        $filePath = self::$basePath . '/' . implode('/', $path) . '/' . $class . '.php';
 
         if (file_exists($filePath)) {
             require_once($filePath);
